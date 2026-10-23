@@ -80,7 +80,7 @@
       <section class="hero">
         <div>
           <span class="eyebrow"><span class="dot"></span> Live food safety, verified every minute</span>
-          <h1>${SP.TAGLINE.replace('every plate.', '<em>every plate.</em>')}</h1>
+          <h1>${SP.TAGLINE.replace('every plate', '<em>every plate</em>')}</h1>
           <p class="lede">HygiQ is the live trust layer between kitchens, customers and regulators. Sensors, checklists and AI photo checks turn into one hygiene score that anyone can verify with a QR scan.</p>
           <div class="row" style="margin-top:26px">
             <a class="btn primary" href="#roles">Get started ${icon('arrowR')}</a>
@@ -107,11 +107,6 @@
           <div class="float-card b"><span class="pill pill-danger">!</span> Prep fridge 7.1°C — alert sent</div>
         </div>
       </section>
-
-      <div class="marquee" aria-hidden="true"><div class="marquee-track">${
-        ['Live hygiene scores', 'Fridge at 3.2°C', 'AI photo checks', 'Scan the QR', 'Allergy Guard on', 'Outbreak early warning', 'Zero paper logs', 'Trust on every plate']
-          .concat(['Live hygiene scores', 'Fridge at 3.2°C', 'AI photo checks', 'Scan the QR', 'Allergy Guard on', 'Outbreak early warning', 'Zero paper logs', 'Trust on every plate'])
-          .map((t) => `<span>${t}</span>`).join('')}</div></div>
 
       <section class="section" id="roles" tabindex="-1">
         <h2>Who are you here as?</h2>
