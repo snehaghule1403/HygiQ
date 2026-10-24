@@ -164,7 +164,8 @@
     const f = $(`[data-field="${id}"]`, form);
     if (!f) return;
     f.classList.toggle('invalid', !!msg);
-    $('.err span', f).textContent = msg || '';
+    const label = $('.err span', f); // some fields (like the outlet type dropdown) have no error label
+    if (label) label.textContent = msg || '';
     $('input,select', f)?.setAttribute('aria-invalid', msg ? 'true' : 'false');
   };
 
