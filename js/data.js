@@ -96,14 +96,15 @@ SP.QUIZZES = [
 
 /* ---------- outlets (shared by consumer + regulator in later phases) ---------- */
 SP.seedOutlets = () => [
-  { id: 'o1', name: 'Green Bowl Kitchen', area: 'Koramangala', type: 'Restaurant', veg: false, distance: 0.8, cuisine: 'Healthy · Bowls', lat: 2, lng: 3 },
-  { id: 'o2', name: 'IIT Central Canteen', area: 'Powai', type: 'Canteen', veg: true, distance: 1.4, cuisine: 'South Indian · Thali', lat: 1, lng: 1 },
-  { id: 'o3', name: 'Spice Route Biryani', area: 'Indiranagar', type: 'Restaurant', veg: false, distance: 2.1, cuisine: 'Biryani · Mughlai', lat: 3, lng: 4 },
-  { id: 'o4', name: 'Annapurna Bhojanalaya', area: 'Jayanagar', type: 'Restaurant', veg: true, distance: 3.0, cuisine: 'Gujarati · Thali', lat: 4, lng: 1 },
-  { id: 'o5', name: 'Tech Park Food Court', area: 'Whitefield', type: 'Canteen', veg: false, distance: 5.6, cuisine: 'Multi-cuisine', lat: 0, lng: 4 },
-  { id: 'o6', name: 'Mama Mia Pizzeria', area: 'Indiranagar', type: 'Restaurant', veg: true, distance: 2.4, cuisine: 'Italian · Pizza', lat: 3, lng: 3 },
-  { id: 'o7', name: 'Chai & Chaat Corner', area: 'Koramangala', type: 'Street food', veg: true, distance: 1.1, cuisine: 'Street food · Snacks', lat: 2, lng: 2 },
-  { id: 'o8', name: 'Ocean Catch Seafood', area: 'Indiranagar', type: 'Restaurant', veg: false, distance: 2.7, cuisine: 'Seafood · Coastal', lat: 3, lng: 2 },
+  // ll = [latitude, longitude] in Bengaluru, used by the live maps
+  { id: 'o1', name: 'Green Bowl Kitchen', area: 'Koramangala', type: 'Restaurant', veg: false, distance: 0.8, cuisine: 'Healthy · Bowls', lat: 2, lng: 3, ll: [12.9352, 77.6245] },
+  { id: 'o2', name: 'Campus Central Canteen', area: 'Malleshwaram', type: 'Canteen', veg: true, distance: 1.4, cuisine: 'South Indian · Thali', lat: 1, lng: 1, ll: [13.0068, 77.5713] },
+  { id: 'o3', name: 'Spice Route Biryani', area: 'Indiranagar', type: 'Restaurant', veg: false, distance: 2.1, cuisine: 'Biryani · Mughlai', lat: 3, lng: 4, ll: [12.9784, 77.6408] },
+  { id: 'o4', name: 'Annapurna Bhojanalaya', area: 'Jayanagar', type: 'Restaurant', veg: true, distance: 3.0, cuisine: 'Gujarati · Thali', lat: 4, lng: 1, ll: [12.9250, 77.5938] },
+  { id: 'o5', name: 'Tech Park Food Court', area: 'Whitefield', type: 'Canteen', veg: false, distance: 5.6, cuisine: 'Multi-cuisine', lat: 0, lng: 4, ll: [12.9698, 77.7500] },
+  { id: 'o6', name: 'Mama Mia Pizzeria', area: 'Indiranagar', type: 'Restaurant', veg: true, distance: 2.4, cuisine: 'Italian · Pizza', lat: 3, lng: 3, ll: [12.9719, 77.6412] },
+  { id: 'o7', name: 'Chai & Chaat Corner', area: 'Koramangala', type: 'Street food', veg: true, distance: 1.1, cuisine: 'Street food · Snacks', lat: 2, lng: 2, ll: [12.9279, 77.6271] },
+  { id: 'o8', name: 'Ocean Catch Seafood', area: 'Indiranagar', type: 'Restaurant', veg: false, distance: 2.7, cuisine: 'Seafood · Coastal', lat: 3, lng: 2, ll: [12.9660, 77.6380] },
 ];
 
 /* Full kitchen operational state for one outlet. `quality` tunes how good the seed looks. */
@@ -188,7 +189,7 @@ SP.seedState = function () {
     id: 'u-' + role, role, name: d.name, email: d.email, pass: SP.hash(d.pass), outletId: d.outletId || null,
     allergies: role === 'consumer' ? ['peanuts', 'milk'] : [], demo: true,
   }));
-  return { version: 4, outlets, kitchens, users, complaints: SP.seedComplaints(), inspections: SP.seedInspections() };
+  return { version: 5, outlets, kitchens, users, complaints: SP.seedComplaints(), inspections: SP.seedInspections() };
 };
 
 /* ---------- menus (dish allergens + cross-contact risks) ---------- */

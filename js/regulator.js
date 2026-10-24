@@ -112,7 +112,10 @@
         ${kpi('list', 'safe', upcoming.length, 'inspections scheduled')}
       </div>
       <div class="grid g2" style="align-items:start">
-        <section class="card"><div class="card-head"><div><h2>Risk heatmap</h2><p>Jurisdiction grid · riskiest outlet per block</p></div></div>${heatmap()}</section>
+        <section class="card"><div class="card-head"><div><h2>Live risk map</h2><p>Outlets by risk score · circles show complaint hotspots</p></div></div>
+          <div id="regMap" class="mapbox" role="region" aria-label="Map of outlets by risk, with complaint hotspots"></div>
+          <div class="map-legend" id="regLegend"><span><i class="lg-safe"></i>Low risk</span><span><i class="lg-warn"></i>Medium</span><span><i class="lg-danger"></i>High</span><span><i class="lg-zone"></i>Complaint hotspot</span></div>
+          <div id="regFallback" hidden>${heatmap()}</div></section>
         <section class="card"><div class="card-head"><div><h2>Highest risk outlets</h2><p>Inspect from the top down</p></div><a class="btn ghost sm" href="#/regulator/outlets">See all</a></div>
           ${ranked.slice(0, 5).map(riskRow).join('')}</section>
       </div>
@@ -283,12 +286,43 @@
     v.addEventListener('input', (e) => { if (e.target.id === 'oq') { oq = e.target.value.trim(); $('#o-list').innerHTML = outletsList(); } });
   }
 
+  /* Live risk map: outlet markers coloured by risk, complaint circles per area (red when an outbreak cluster is flagged) */
+  function drawRegMap() {
+    if (!$('#regMap')) return;
+    const m = SP.Map.make('regMap');
+    if (!m) { $('#regMap').remove(); $('#regLegend')?.remove(); $('#regFallback').hidden = false; return; }
+    const obAreas = new Set(SP.outbreaks().map((ob) => ob.area));
+    const byArea = {};
+    S().complaints.filter((c) => c.status !== 'resolved').forEach((c) => {
+      const o = outletById(c.outletId);
+      if (o) (byArea[o.area] = byArea[o.area] || []).push(c);
+    });
+    Object.entries(byArea).forEach(([area, list]) => {
+      const ll = SP.Map.AREA_LL[area];
+      if (!ll) return;
+      const tone = obAreas.has(area) ? 'danger' : 'warn';
+      L.circle(ll, { radius: 500 + list.length * 350, className: 'zone-' + tone, weight: 1.5, fillOpacity: 0.18 })
+        .bindTooltip(`${area}: ${list.length} open complaint${list.length > 1 ? 's' : ''}${obAreas.has(area) ? ' · outbreak cluster' : ''}`, { sticky: true })
+        .addTo(m._hq);
+    });
+    const pts = [];
+    S().outlets.forEach((o) => {
+      const r = SP.riskOf(o);
+      const ll = SP.Map.coords(o);
+      pts.push(ll);
+      SP.Map.marker(ll, r.risk, riskTone(r.risk), `${o.name}, risk ${r.risk}`)
+        .bindPopup(`<b>${esc(o.name)}</b><br><span class="muted">${esc(o.type)} · ${esc(o.area)}</span><br>${riskLabel(r.risk)} · risk <b>${r.risk}</b> · score ${r.score}<br>${r.complaints} complaint(s) in 7 days<br><a class="btn primary sm" href="#/regulator/outlet/${o.id}">Full history</a>`)
+        .addTo(m._hq);
+    });
+    SP.Map.fit(m, pts, 13);
+  }
+
   function page(app, tab) {
     const [title, sub] = TITLES[tab];
     const obN = SP.outbreaks().length;
     const nav = NAV.map((n) => ({ ...n, badge: n.id === 'complaints' && obN ? obN : '' }));
     app.innerHTML = SP.shell({ role: 'regulator', nav, active: tab, title, subtitle: sub, content: SP.ui.skeleton(4) });
-    const draw = () => { const v = $('#view'); if (v) v.innerHTML = VIEWS[tab](); };
+    const draw = () => { const v = $('#view'); if (!v) return; v.innerHTML = VIEWS[tab](); if (tab === 'overview') drawRegMap(); };
     setTimeout(() => { draw(); bindCommon(draw); }, 300);
   }
 

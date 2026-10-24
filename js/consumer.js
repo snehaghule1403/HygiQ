@@ -134,8 +134,9 @@
         <div class="stack" style="gap:6px">
           <div class="row"><span class="veg-mark ${o.veg ? 'veg' : 'nonveg'}" aria-label="${o.veg ? 'Pure veg' : 'Veg & non-veg'}"></span><span class="muted">${esc(o.type)} · ${esc(o.cuisine)}</span></div>
           <h2 style="font-size:24px">${esc(o.name)}</h2>
-          <p class="muted">${esc(o.area)} · ${o.distance} km away</p>
+          <p class="muted">${icon('pin')} ${esc(o.area)} · ${SP.Map.distanceOf(o)} km away</p>
           <div class="row" style="margin-top:8px">
+            <button class="btn ghost sm" id="listen-outlet">${icon('speaker')} Listen</button>
             ${publicView ? '' : `<button class="btn ghost sm" id="complain">${icon('alert')} Report a problem</button>`}
             <span class="pill pill-info">${icon('eye')} Verified by HygiQ sensors & logs</span>
           </div>
@@ -145,7 +146,11 @@
       ${SP.transparency(o)}
       <div class="grid g2" style="align-items:start">
         <div id="menu-wrap">${menuHTML(o, allergies, SP.Consumer.allergyMode())}</div>
-        ${SP.qrCard(o)}
+        <div class="stack">
+          ${SP.qrCard(o)}
+          <section class="card"><div class="card-head"><h2>Location</h2><span class="muted" style="font-size:13px">${esc(o.area)}, Bengaluru</span></div>
+            <div id="o-map" class="mapbox sm" role="region" aria-label="Map showing where ${esc(o.name)} is"></div></section>
+        </div>
       </div>
       ${publicView && !(u?.role === 'consumer') ? `<section class="card row spread"><div><h2>Have allergies?</h2><p class="muted">Sign in as a customer and Allergy Guard will flag unsafe dishes for you.</p></div><a class="btn primary" href="#/login/consumer">Sign in</a></section>` : ''}`;
   }
@@ -154,6 +159,32 @@
     SP.ui.animateGauge($('#o-gauge'), scoreOf(o));
     SP.bindQR(o);
     $('#complain')?.addEventListener('click', () => SP.go('/consumer/complaints?outlet=' + o.id));
+
+    // Read the kitchen's hygiene summary aloud in the chosen voice language
+    $('#listen-outlet').addEventListener('click', () => {
+      const k = S().kitchens[o.id];
+      const score = scoreOf(o);
+      const u = me();
+      const allergies = u?.role === 'consumer' ? u.allergies || [] : [];
+      const dishes = SP.menuFor(o.id);
+      let text = SP.Voice.t('outletSummary', {
+        name: o.name, score, label: SP.Voice.scoreLabel(score),
+        h: Math.max(1, Math.round((Date.now() - new Date(k.lastCleaning)) / 3600000)),
+        ok: k.sensors.filter(SP.inRange).length, total: k.sensors.length,
+      });
+      if (allergies.length) text += ' ' + SP.Voice.t('outletAllergy', { safe: dishes.filter((d) => SP.dishRisk(d, allergies).level === 'safe').length, dishes: dishes.length });
+      SP.Voice.speak(text);
+    });
+
+    // Small location map
+    const m = SP.Map.make('o-map', SP.Map.coords(o), 15);
+    if (m) {
+      const score = scoreOf(o);
+      SP.Map.marker(SP.Map.coords(o), score, SP.scoreTone(score), o.name).bindPopup(`<b>${esc(o.name)}</b><br>${esc(o.area)}`).addTo(m._hq);
+      SP.Map.addMe(m);
+    } else if ($('#o-map')) {
+      $('#o-map').outerHTML = `<p class="muted" style="font-size:13px">The map could not load. ${esc(o.area)}, Bengaluru.</p>`;
+    }
     $('#menu-wrap').addEventListener('click', (e) => {
       const b = e.target.closest('[data-amode]');
       if (!b) return;
@@ -164,16 +195,45 @@
   }
 
   /* ===================== Explore ===================== */
-  const filters = { q: '', min: 0, diet: 'all', sort: 'score' };
-  function exploreList() {
-    const u = me();
-    let list = S().outlets.map((o) => ({ ...o, score: scoreOf(o) }));
+  const filters = { q: '', min: 0, diet: 'all', sort: 'score', mode: 'list' };
+  /* Outlets after search and filters, with live score and distance (from "Near me" or MG Road) */
+  function filteredOutlets() {
+    let list = S().outlets.map((o) => ({ ...o, score: scoreOf(o), distance: SP.Map.distanceOf(o) }));
     const q = filters.q.toLowerCase();
-    if (q) list = list.filter((o) => (o.name + o.area + o.cuisine).toLowerCase().includes(q));
+    if (q) list = list.filter((o) => (o.name + ' ' + o.area + ' ' + o.cuisine).toLowerCase().includes(q));
     if (filters.min) list = list.filter((o) => o.score >= filters.min);
     if (filters.diet === 'veg') list = list.filter((o) => o.veg);
     if (filters.diet === 'nonveg') list = list.filter((o) => !o.veg);
-    list.sort((a, b) => (filters.sort === 'score' ? b.score - a.score : a.distance - b.distance));
+    return list.sort((a, b) => (filters.sort === 'score' ? b.score - a.score : a.distance - b.distance));
+  }
+
+  /* Map view of the same filtered outlets: markers coloured by hygiene score */
+  function drawExploreMap() {
+    const area = $('#map-area');
+    if (!area) return;
+    if (filters.mode !== 'map') { SP.Map.destroy('exMap'); area.innerHTML = ''; return; }
+    if (!SP.Map.available()) { area.innerHTML = `<section class="card">${SP.ui.empty('map', 'The map could not load', 'Check your internet connection. The list below still works.')}</section>`; return; }
+    area.innerHTML = `<section class="card">
+      <div id="exMap" class="mapbox" role="region" aria-label="Map of outlets coloured by hygiene score"></div>
+      <div class="map-legend"><span><i class="lg-safe"></i>Safe 80+</span><span><i class="lg-warn"></i>60–79</span><span><i class="lg-danger"></i>Below 60</span>${SP.Map.me ? '<span><i class="lg-me"></i>You</span>' : ''}</div>
+    </section>`;
+    const m = SP.Map.make('exMap');
+    if (!m) return;
+    const list = filteredOutlets();
+    const pts = list.map((o) => SP.Map.coords(o));
+    SP.Map.addMe(m);
+    if (SP.Map.me) pts.push(SP.Map.me);
+    list.forEach((o) => {
+      SP.Map.marker(SP.Map.coords(o), o.score, SP.scoreTone(o.score), `${o.name}, hygiene score ${o.score}`)
+        .bindPopup(`<b>${esc(o.name)}</b><br><span class="muted">${esc(o.cuisine)} · ${esc(o.area)} · ${o.distance} km</span><br>Hygiene score <b>${o.score}</b> · ${SP.scoreLabel(o.score)}<br><a class="btn primary sm" href="#/consumer/outlet/${o.id}">View kitchen</a>`)
+        .addTo(m._hq);
+    });
+    SP.Map.fit(m, pts);
+  }
+
+  function exploreList() {
+    const u = me();
+    const list = filteredOutlets();
     if (!list.length) return SP.ui.empty('store', 'No outlets match', 'Try clearing a filter or searching a different area.', '<button class="btn ghost" id="clear-f">Clear filters</button>');
     return `<div class="grid g3">${list.map((o) => {
       const safeN = SP.menuFor(o.id).filter((d) => SP.dishRisk(d, u.allergies || []).level === 'safe').length;
@@ -182,7 +242,7 @@
         <div class="row spread"><span class="veg-mark ${o.veg ? 'veg' : 'nonveg'}" aria-label="${o.veg ? 'Pure veg' : 'Veg & non-veg'}"></span>${SP.ui.scorePill(o.score)}</div>
         <h3>${esc(o.name)}</h3>
         <p class="muted">${esc(o.cuisine)}</p>
-        <div class="row" style="font-size:13px;gap:14px"><span>${esc(o.area)}</span><span>${o.distance} km</span></div>
+        <div class="row" style="font-size:13px;gap:14px"><span>${icon('pin')} ${esc(o.area)}</span><span>${o.distance} km</span></div>
         <div class="score-strip"><i style="width:${o.score}%;background:var(--${tone})"></i></div>
         <div class="row spread" style="font-size:13px"><span class="t-${tone}" style="font-weight:700">${SP.scoreLabel(o.score)}</span>
           ${u.allergies?.length ? `<span class="muted">${icon('shield')} ${safeN} dishes safe for you</span>` : ''}</div>
@@ -193,16 +253,31 @@
     const chip = (grp, val, label) => `<button class="chip" data-f="${grp}" data-v="${val}" aria-pressed="${String(filters[grp]) === String(val)}">${label}</button>`;
     return `
       <div class="search-row"><label class="sr-only" for="q">Search outlets</label>
-        <div class="search">${icon('eye')}<input class="input" id="q" type="search" placeholder="Search by name, area or cuisine" value="${esc(filters.q)}"></div></div>
+        <div class="search">${icon('eye')}<input class="input" id="q" type="search" placeholder="Search by name, area or cuisine" value="${esc(filters.q)}"></div>
+        ${SP.Voice.micButton('q-mic', 'Search by voice')}</div>
       <div class="row" role="group" aria-label="Filters">
-        ${chip('min', 0, 'Any score')}${chip('min', 80, 'Safe 80+')}${chip('min', 60, '60+')}
+        ${chip('mode', 'list', `${icon('list')} List`)}${chip('mode', 'map', `${icon('map')} Map`)}
+        <button class="chip" id="near-me" aria-pressed="${!!SP.Map.me}">${icon('locate')} Near me</button>
+        <span class="sep"></span>${chip('min', 0, 'Any score')}${chip('min', 80, 'Safe 80+')}${chip('min', 60, '60+')}
         <span class="sep"></span>${chip('diet', 'all', 'All')}${chip('diet', 'veg', 'Pure veg')}${chip('diet', 'nonveg', 'Non-veg')}
         <span class="sep"></span>${chip('sort', 'score', 'Top rated')}${chip('sort', 'distance', 'Nearest')}
       </div>
+      <div id="map-area"></div>
       <div id="results">${exploreList()}</div>`;
   }
   function bindExplore() {
-    const refresh = () => { $('#results').innerHTML = exploreList(); $('#clear-f')?.addEventListener('click', clear); };
+    const refresh = () => { $('#results').innerHTML = exploreList(); $('#clear-f')?.addEventListener('click', clear); drawExploreMap(); };
+    const syncChips = () => $$('[data-f]').forEach((c) => c.setAttribute('aria-pressed', String(String(filters[c.dataset.f]) === c.dataset.v)));
+    $('#q-mic').addEventListener('click', () => SP.Voice.listen({
+      btn: $('#q-mic'),
+      onPartial: (s) => { $('#q').value = s; },
+      onFinal: (s) => { $('#q').value = s; filters.q = s.trim(); refresh(); SP.toast(`Searching for “${s}”`, 'info'); },
+    }));
+    $('#near-me').addEventListener('click', () => {
+      if (SP.Map.me) { SP.Map.clearMe(); filters.sort = 'score'; $('#near-me').setAttribute('aria-pressed', 'false'); syncChips(); refresh(); return; }
+      SP.Map.locate(() => { filters.sort = 'distance'; filters.mode = 'map'; $('#near-me').setAttribute('aria-pressed', 'true'); syncChips(); refresh(); });
+    });
+    drawExploreMap();
     const clear = () => { Object.assign(filters, { q: '', min: 0, diet: 'all' }); $('#q').value = ''; $$('[data-f]').forEach((c) => c.setAttribute('aria-pressed', String(String(filters[c.dataset.f]) === c.dataset.v))); refresh(); };
     let t;
     $('#q').addEventListener('input', (e) => { clearTimeout(t); t = setTimeout(() => { filters.q = e.target.value.trim(); refresh(); }, 150); });

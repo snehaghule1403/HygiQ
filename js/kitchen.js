@@ -51,6 +51,7 @@
         k.alerts.unshift({ id: SP.uid('al'), at: new Date().toISOString(), sensorId: s.id, text: `${s.name} at ${s.value}°C — outside ${r.min}–${r.max}°C` });
         k.tempLog.unshift({ at: new Date().toISOString(), sensor: s.name, value: s.value, ok: false, auto: true });
         SP.toast(`${s.name} reads ${s.value}°C (safe: ${r.min} to ${r.max}°C). Hygiene score lowered.`, 'danger', 'Temperature alert');
+        if (SP.Voice) SP.Voice.alert(SP.Voice.t('tempAlert', { sensor: s.name, value: s.value })); // spoken when read-aloud is on
       } else if (!wasOk && nowOk) {
         k.tempLog.unshift({ at: new Date().toISOString(), sensor: s.name, value: s.value, ok: true, auto: true });
         SP.toast(`${s.name} is back in the safe range.`, 'safe', 'Recovered');
@@ -132,6 +133,21 @@
     : `<tr><td colspan="5">${SP.ui.empty('thermo', 'No readings yet', 'Readings appear here as sensors report or when you log one manually.')}</td></tr>`;
 
   /* ===================== TAB: overview ===================== */
+  /* Spoken summary of the kitchen's state, in the chosen voice language */
+  function kitchenSummaryText(k) {
+    const score = SP.computeScore(k);
+    const outN = k.sensors.filter((s) => !SP.inRange(s)).length;
+    return SP.Voice.t('kitchenSummary', {
+      score, label: SP.Voice.scoreLabel(score),
+      tasks: Object.values(k.checklist).flat().filter((i) => !i.done).length,
+      temps: outN ? SP.Voice.t('tempsBad', { n: outN }) : SP.Voice.t('tempsOk'),
+      exp: k.batches.filter((b) => SP.daysLeft(b.expiry) <= 2).length,
+    });
+  }
+  function bindOverview(k) {
+    $('#k-listen')?.addEventListener('click', () => SP.Voice.speak(kitchenSummaryText(k)));
+  }
+
   function viewOverview(k) {
     const items = Object.values(k.checklist).flat();
     const open = items.filter((i) => !i.done).length;
@@ -152,7 +168,7 @@
         <div style="display:grid;place-items:center;gap:8px">${SP.ui.gauge('k-gauge')}<small class="muted">Updates live as logs change</small></div>
         <div class="stack">
           <div class="card-head" style="margin:0"><div><h2 id="sh">Hygiene score breakdown</h2><p>${esc(outlet().name)} · ${esc(outlet().area)}</p></div>
-            <a class="btn ghost sm" href="#/kitchen/report">${icon('file')} Audit report</a></div>
+            <div class="row"><button class="btn ghost sm" id="k-listen">${icon('speaker')} Listen</button><a class="btn ghost sm" href="#/kitchen/report">${icon('file')} Audit report</a></div></div>
           <div class="bars" id="k-bars">${breakdownBars(k)}</div>
         </div>
       </section>
@@ -275,7 +291,7 @@
       ${expiring.length ? `<div class="banner warn">${icon('alert')}<span>${expiring.length} batch(es) expire within 2 days: ${expiring.map((b) => esc(b.item)).join(', ')}</span><a class="btn ghost sm" href="#/kitchen/surplus">List as surplus</a></div>` : ''}
       <section class="card">
         <div class="card-head"><div><h2>Batches in stock</h2><p>Sorted by expiry — first to expire, first out</p></div>
-          <button class="btn primary sm" id="add-batch">${icon('plus')} Add batch</button></div>
+          <div class="row"><button class="btn ghost sm" id="voice-batch">${icon('mic')} Log by voice</button><button class="btn primary sm" id="add-batch">${icon('plus')} Add batch</button></div></div>
         ${sorted.length ? `<div class="table-wrap"><table>
           <thead><tr><th>Batch</th><th>Item</th><th>Supplier</th><th>Qty</th><th>Expiry</th><th>Status</th><th></th></tr></thead>
           <tbody>${sorted.map((b) => `<tr><td class="mono">${esc(b.id)}</td><td><strong>${esc(b.item)}</strong>${b.allergens.length ? `<br><small class="muted">Contains: ${b.allergens.join(', ')}</small>` : ''}</td>
@@ -290,12 +306,14 @@
       </section>`;
   }
   function bindStock(k, rerender) {
-    $('#add-batch').onclick = () => SP.modal({
-      title: 'Add a batch',
-      body: `<div class="field"><label for="b-item">Item</label><input class="input" id="b-item" placeholder="e.g. Tomatoes (5 kg)"></div>
-        <div class="grid g2"><div class="field"><label for="b-sup">Supplier</label><input class="input" id="b-sup" placeholder="Supplier"></div>
+    // One batch form, used by "Add batch" and pre-filled by "Log by voice"
+    const openBatch = (pre = {}) => SP.modal({
+      title: pre.heard ? 'Check the voice entry' : 'Add a batch',
+      body: `${pre.heard ? `<p class="banner" style="background:var(--surface-2)">${icon('mic')}<span>Heard: “${esc(pre.heard)}”. Check the details, then save.</span></p>` : ''}
+        <div class="field"><label for="b-item">Item</label><input class="input" id="b-item" placeholder="e.g. Tomatoes (5 kg)" value="${esc(pre.item || '')}"></div>
+        <div class="grid g2"><div class="field"><label for="b-sup">Supplier</label><input class="input" id="b-sup" placeholder="Supplier" value="${esc(pre.supplier || '')}"></div>
         <div class="field"><label for="b-qty">Quantity</label><input class="input" id="b-qty" type="number" min="1" value="1"></div></div>
-        <div class="field"><label for="b-exp">Expiry date</label><input class="input" id="b-exp" type="date" value="${new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10)}"></div>
+        <div class="field"><label for="b-exp">Expiry date</label><input class="input" id="b-exp" type="date" value="${pre.expiry || new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10)}"></div>
         <div class="field"><label>Allergens</label><div class="allergy-grid">${SP.ALLERGENS.map((a) => `<button type="button" class="chip" aria-pressed="false" data-al="${a}">${a}</button>`).join('')}</div></div>
         <p class="form-error" id="b-err">${icon('alert')}<span>Item, supplier and expiry are required.</span></p>`,
       actions: [{ label: 'Cancel' }, { label: 'Add batch', kind: 'primary', onClick: (m) => {
@@ -304,8 +322,11 @@
         const d = new Date();
         k.batches.push({ id: `B-${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, '0')}-${String(k.batches.length + 1).padStart(2, '0')}${Math.random().toString(36).slice(2, 4).toUpperCase()}`, item, supplier: sup, qty: +$('#b-qty', m).value || 1, received: d.toISOString().slice(0, 10), expiry: exp, allergens: $$('[data-al][aria-pressed="true"]', m).map((b) => b.dataset.al) });
         save(); rerender(); SP.toast(`${item} added to stock.`, 'safe');
+        if (pre.heard) SP.Voice.speak(SP.Voice.t('delivered', { item, date: SP.Voice.dateWords(exp) }));
       } }],
     });
+    $('#add-batch').onclick = () => openBatch();
+    $('#voice-batch').onclick = () => SP.Voice.captureDelivery(openBatch, [...new Set(k.batches.map((b) => b.supplier))]);
     document.body.addEventListener('click', chipToggle);
     SP.onLeave(() => document.body.removeEventListener('click', chipToggle));
     $$('[data-del]').forEach((b) => (b.onclick = () => { k.batches = k.batches.filter((x) => x.id !== b.dataset.del); save(); rerender(); SP.toast('Batch removed from stock.', 'info'); }));
@@ -639,7 +660,7 @@
 
   /* ===================== Route ===================== */
   const VIEWS = {
-    overview: [viewOverview], haccp: [viewHaccp, bindHaccp], temps: [viewTemps, bindTemps], stock: [viewStock, bindStock],
+    overview: [viewOverview, bindOverview], haccp: [viewHaccp, bindHaccp], temps: [viewTemps, bindTemps], stock: [viewStock, bindStock],
     ai: [viewAI, bindAI], staff: [viewStaff, bindStaff], surplus: [viewSurplus, bindSurplus], report: [viewReport, bindReport],
   };
   let firstLoad = true;

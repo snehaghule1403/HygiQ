@@ -22,7 +22,7 @@ SP.Store = (function () {
 
   let state;
   try { state = JSON.parse(raw.get(KEY)); } catch (e) { state = null; }
-  if (!state || state.version !== 4) state = SP.seedState();
+  if (!state || state.version !== 5) state = SP.seedState();
 
   return {
     persistent: ok,
@@ -116,6 +116,12 @@ const ICONS = {
   rocket: '<path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22 22 0 0 1-4 2z"/><path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5"/>',
   more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
   refresh: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/>',
+  mic: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/>',
+  speaker: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',
+  mute: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6M16 9l6 6"/>',
+  pin: '<path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+  locate: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>',
+  map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
 };
 SP.icon = (name, cls = '') =>
   `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONS[name] || ''}</svg>`;
@@ -298,7 +304,7 @@ SP.shell = function ({ role, nav, active, title, subtitle, content, actions = ''
       <header class="topbar">
         <div class="mobile-brand">${SP.ui.brand(true)}</div>
         <div class="titles"><h1>${title}</h1>${subtitle ? `<p>${subtitle}</p>` : ''}</div>
-        <div class="top-actions">${actions}<button class="btn ghost sm hide-xs" data-demo aria-label="Run hackathon demo mode">${SP.icon('play')} Demo</button>${SP.Theme.button()}<button class="icon-btn mobile-only" data-logout aria-label="Sign out">${SP.icon('logout')}</button></div>
+        <div class="top-actions">${actions}${SP.Voice ? SP.Voice.controls() : ''}<button class="btn ghost sm hide-xs" data-demo aria-label="Run hackathon demo mode">${SP.icon('play')} Demo</button>${SP.Theme.button()}<button class="icon-btn mobile-only" data-logout aria-label="Sign out">${SP.icon('logout')}</button></div>
       </header>
       <main id="view" class="view" tabindex="-1">${content}</main>
     </div>

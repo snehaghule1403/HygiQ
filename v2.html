@@ -1,0 +1,1132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="HygiQ: a live food-safety trust layer for kitchens, customers, homes and regulators, with a multimodal, voice-enabled AI assistant and live maps.">
+<meta name="theme-color" content="#1F5C4A">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<title>HygiQ — Trust on every plate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: app shell. Left rail on desktop, scrollable bottom tab bar on phones, assistant as a slide-in panel, demo bar docked at the bottom. */
+:root{
+  --bg:#F3F5F1; --surface:#FFFFFF; --surface-2:#E9EEE7; --ink:#14201B; --muted:#5A6A61; --line:#D5DDD3;
+  --brand:#1F5C4A; --on-brand:#FFFFFF; --brand-soft:#DCEBE4;
+  --accent:#E3A021; --accent-ink:#8A5300; --accent-soft:#FBEFD6;
+  --ok:#2D7A4E; --ok-soft:#DDF0E3; --warn:#A8690E; --warn-soft:#FBEBCF; --bad:#BE3B27; --bad-soft:#F8DED8;
+  --shadow:0 1px 2px rgba(20,32,27,.06),0 8px 24px rgba(20,32,27,.06);
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1512; --surface:#16201B; --surface-2:#1E2A24; --ink:#E6EEE9; --muted:#97A89E; --line:#2A3832;
+  --brand:#62BC98; --on-brand:#0B1410; --brand-soft:#1C3229;
+  --accent:#F0AE45; --accent-ink:#F4BE65; --accent-soft:#3A2C12;
+  --ok:#5CC488; --ok-soft:#173226; --warn:#E6A84A; --warn-soft:#3A2B12; --bad:#F07762; --bad-soft:#3D1D17;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1512; --surface:#16201B; --surface-2:#1E2A24; --ink:#E6EEE9; --muted:#97A89E; --line:#2A3832;
+  --brand:#62BC98; --on-brand:#0B1410; --brand-soft:#1C3229;
+  --accent:#F0AE45; --accent-ink:#F4BE65; --accent-soft:#3A2C12;
+  --ok:#5CC488; --ok-soft:#173226; --warn:#E6A84A; --warn-soft:#3A2B12; --bad:#F07762; --bad-soft:#3D1D17;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+[hidden]{display:none!important}
+img{max-width:100%}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:1.75rem;font-weight:800}
+h2{font-size:1.15rem;font-weight:700}
+h3{font-size:1rem;font-weight:700}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:.85em}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--muted)}
+
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100%}
+.rail{background:var(--surface);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:20px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;gap:10px;align-items:center;padding:0 6px}
+.brand b{font-family:var(--f-display);font-size:1.2rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.brand small{display:block;font-size:.72rem;color:var(--muted);font-weight:500}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;border:0;background:none;padding:9px 10px;border-radius:10px;text-align:left;font-weight:600;color:var(--muted)}
+.nav button:hover{background:var(--surface-2);color:var(--ink)}
+.nav button[aria-current="page"]{background:var(--brand-soft);color:var(--brand)}
+.nav svg{width:18px;height:18px;flex:none}
+.nav .count{margin-left:auto;font-size:.72rem;background:var(--bad);color:#fff;border-radius:99px;padding:0 7px;line-height:18px}
+.rail-foot{margin-top:auto;display:grid;gap:8px}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:14px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.topbar .mob-brand{display:none}
+.roles{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:2px;overflow-x:auto;max-width:100%}
+.roles button{border:0;background:none;padding:7px 12px;border-radius:9px;font-weight:600;font-size:.88rem;color:var(--muted);white-space:nowrap}
+.roles button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:10px}
+.ai-pill{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.ai-pill[data-s="live"] .dot{background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+.ai-pill[data-s="demo"] .dot{background:var(--accent)}
+.content{padding-block:24px 140px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));max-width:1180px;width:100%;display:grid;gap:20px}
+.pagehead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.pagehead p{color:var(--muted);margin-top:4px;max-width:62ch}
+
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:10px;font-weight:600;font-size:.9rem;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.ghost{border-color:transparent;background:none}
+.btn.sm{padding:5px 10px;font-size:.82rem;border-radius:8px}
+.btn[disabled]{opacity:.55;cursor:wait}
+.btn svg{width:16px;height:16px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:.75rem;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap;line-height:1.6}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.neutral{background:var(--surface-2);color:var(--muted)}
+.pill.accent{background:var(--accent-soft);color:var(--accent-ink)}
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line);min-width:0;flex-wrap:wrap}
+.row:first-child{border-top:0;padding-top:2px}
+.row .grow{flex:1;min-width:140px}
+.row .t{font-weight:600}
+.row .s{font-size:.82rem;color:var(--muted)}
+.stripe{width:4px;align-self:stretch;border-radius:4px;background:var(--line);flex:none}
+.stripe.bad{background:var(--bad)}.stripe.warn{background:var(--warn)}.stripe.ok{background:var(--ok)}
+.stat b{display:block;font-family:var(--f-display);font-size:1.9rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:.82rem;color:var(--muted)}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;font-size:.9rem}
+input[type=text],input[type=date],input[type=number],input[type=time],input[type=search],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 11px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:84px}
+.field{display:grid;gap:5px;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:5px 11px;border-radius:99px;font-size:.84rem;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.chip.f[aria-pressed="true"]{background:var(--brand-soft);border-color:var(--brand);color:var(--brand)}
+.drop{border:1.5px dashed var(--line);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:center;background:var(--surface-2);min-width:0;cursor:pointer}
+.drop img{width:86px;height:86px;object-fit:cover;border-radius:10px;flex:none}
+.drop .ph{width:86px;height:86px;border-radius:10px;background:var(--surface);display:grid;place-items:center;color:var(--muted);flex:none}
+.drop .ph svg{width:28px;height:28px}
+.result{border-radius:12px;padding:14px;background:var(--surface-2);display:grid;gap:8px;font-size:.92rem}
+.result ul{margin:0;padding-left:18px}
+.demo-tag{font-size:.72rem;color:var(--accent-ink);font-weight:700}
+.thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none;background:var(--surface-2)}
+.check{width:28px;height:28px;border-radius:8px;border:1.5px solid var(--line);display:grid;place-items:center;flex:none;background:var(--surface);padding:0}
+.check.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.check svg{width:15px;height:15px}
+.spark{width:100%;height:56px;display:block}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
+.ring text{font-family:var(--f-display);font-weight:800;fill:var(--ink)}
+.ring .arc{transition:stroke-dasharray .6s ease}
+.alert{display:flex;gap:12px;padding:14px;border-radius:14px;background:var(--bad-soft);color:var(--ink);align-items:flex-start;flex-wrap:wrap}
+.alert.warn{background:var(--warn-soft)}
+.alert.okb{background:var(--ok-soft)}
+.alert svg{width:20px;height:20px;flex:none;color:var(--bad);margin-top:2px}
+.alert.warn svg{color:var(--warn)}
+.alert.okb svg{color:var(--ok)}
+.time{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);width:52px;flex:none}
+.md p{margin:0 0 6px}.md ul{margin:0 0 6px;padding-left:18px}.md li{margin:2px 0}
+.map-wrap{overflow-x:auto}
+.map{width:100%;min-width:520px;height:auto;display:block}
+.map text{font-family:var(--f-body);font-size:12px;fill:var(--ink);font-weight:600}
+.map .sub{font-size:10.5px;fill:var(--muted);font-weight:500}
+.map .area{cursor:pointer}
+.map .area:hover circle.halo{opacity:.35}
+.qr{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;width:78px;flex:none}
+.qr i{aspect-ratio:1;background:var(--ink);border-radius:1px}
+.qr i.o{background:transparent}
+.bar{height:6px;background:var(--surface-2);border-radius:6px;margin-top:4px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;transition:width .6s ease}
+.breakdown{display:grid;gap:10px}
+.breakdown .why{font-size:.78rem;color:var(--muted)}
+.shot{position:relative;border-radius:12px;overflow:hidden;background:var(--surface-2);max-width:100%}
+.shot img,.shot canvas{display:block;width:100%;height:auto}
+.vbox{position:absolute;border:2.5px solid var(--bad);border-radius:6px;box-shadow:0 0 0 2px rgba(0,0,0,.18)}
+.vbox span{position:absolute;top:-1px;left:-1px;background:var(--bad);color:#fff;font:700 11px/1 var(--f-mono);padding:3px 5px;border-radius:5px 0 5px 0}
+.vbox.medium{border-color:var(--warn)}.vbox.medium span{background:var(--warn)}
+.vbox.low{border-color:var(--accent)}.vbox.low span{background:var(--accent);color:#000}
+.vbox.fixed{border-color:var(--ok);border-style:dashed;opacity:.6}.vbox.fixed span{background:var(--ok)}
+.scan{position:absolute;left:0;right:0;height:3px;background:var(--accent);box-shadow:0 0 18px 4px var(--accent);animation:scan 1.4s ease-in-out infinite alternate}
+@keyframes scan{from{top:4%}to{top:94%}}
+.medals{display:flex;gap:6px;flex-wrap:wrap}
+.medal{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink);flex:none}
+.medal.off{background:var(--surface-2);color:var(--line)}
+.medal svg{width:16px;height:16px}
+.quiz-opt{display:block;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;font-weight:600;margin-top:8px}
+.quiz-opt:hover{border-color:var(--brand)}
+.quiz-opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.quiz-opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.tl .row{align-items:flex-start}
+.tl .ico{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--surface-2);color:var(--muted)}
+.tl .ico svg{width:15px;height:15px}
+.tl .ico.bad{background:var(--bad-soft);color:var(--bad)}.tl .ico.ok{background:var(--ok-soft);color:var(--ok)}.tl .ico.warn{background:var(--warn-soft);color:var(--warn)}
+.tbl-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;min-width:520px}
+.tbl th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--muted);text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+.tbl td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:.9rem;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.demo-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:45;width:min(760px,calc(100% - 32px));background:var(--ink);color:var(--bg);border-radius:16px;padding:12px 14px;display:grid;gap:8px;box-shadow:0 14px 40px rgba(0,0,0,.3)}
+.demo-steps{display:flex;gap:6px;overflow-x:auto}
+.demo-steps span{font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:99px;background:color-mix(in srgb,var(--bg) 14%,transparent);white-space:nowrap;opacity:.6}
+.demo-steps span.on{background:var(--accent);color:#1b1205;opacity:1}
+.demo-steps span.done{opacity:.9}
+.demo-bar .cap{font-size:.92rem;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.demo-bar .btn{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 35%,transparent)}
+
+.fab{position:fixed;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;align-items:center;gap:8px;background:var(--brand);color:var(--on-brand);border:0;border-radius:99px;padding:12px 18px 12px 14px;font-weight:700;box-shadow:0 10px 30px rgba(20,60,45,.3)}
+.fab svg{width:22px;height:22px}
+.panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:50;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.12);transform:translateX(105%);transition:transform .25s ease;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.panel.open{transform:none}
+.panel-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.panel-h select{width:auto;padding:5px 8px;font-size:.84rem}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:88%;padding:10px 13px;border-radius:14px;font-size:.92rem;overflow-wrap:anywhere}
+.msg.u{align-self:flex-end;background:var(--brand);color:var(--on-brand);border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:var(--surface-2);border-bottom-left-radius:4px}
+.msg img{max-width:160px;border-radius:8px;display:block;margin-bottom:6px}
+.suggest{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+.suggest button{font-size:.8rem;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 10px;text-align:left}
+.composer{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line);align-items:flex-end}
+.composer textarea{min-height:42px;max-height:120px;flex:1}
+.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none;cursor:pointer}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn.rec{background:var(--bad);border-color:var(--bad);color:#fff;animation:pulse 1.2s ease-in-out infinite}
+.icon-btn[aria-pressed="true"]{background:var(--brand-soft);border-color:var(--brand);color:var(--brand)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 45%,transparent)}50%{box-shadow:0 0 0 8px transparent}}
+.voice-hint{padding:0 16px 8px;font-size:.8rem;color:var(--muted)}
+.attach-prev{padding:0 16px 8px;display:flex;gap:8px;align-items:center;font-size:.82rem}
+.attach-prev img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:48}
+
+.bottom-nav{display:none}
+@media (max-width:960px){
+  .app{grid-template-columns:1fr}
+  .rail{display:none}
+  .topbar .mob-brand{display:flex}
+  .bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));overflow-x:auto;gap:2px}
+  .bottom-nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.68rem;font-weight:600;color:var(--muted);padding:4px 6px;flex:1 0 64px;min-width:64px}
+  .bottom-nav button span{white-space:nowrap}
+  .bottom-nav .count{display:none}
+  .bottom-nav button[aria-current="page"]{color:var(--brand)}
+  .bottom-nav svg{width:22px;height:22px}
+  .fab{bottom:calc(76px + env(safe-area-inset-bottom,0px));padding:13px}
+  .fab .fab-l{display:none}
+  .demo-bar{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:1fr}
+  .g2.wide{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .g2{grid-template-columns:1fr}
+  .topbar,.content{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .hero{grid-template-columns:1fr;justify-items:start}
+  h1{font-size:1.45rem}
+  .drop{flex-direction:column;align-items:flex-start}
+  .top-r{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* Leaflet 1.9.4 (BSD-2) */
+.leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas, .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer { position: absolute; left: 0; top: 0; } .leaflet-container { overflow: hidden; } .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow { -webkit-user-select: none; -moz-user-select: none; user-select: none; -webkit-user-drag: none; } .leaflet-tile::selection { background: transparent; } .leaflet-safari .leaflet-tile { image-rendering: -webkit-optimize-contrast; } .leaflet-safari .leaflet-tile-container { width: 1600px; height: 1600px; -webkit-transform-origin: 0 0; } .leaflet-marker-icon, .leaflet-marker-shadow { display: block; } .leaflet-container .leaflet-overlay-pane svg { max-width: none !important; max-height: none !important; } .leaflet-container .leaflet-marker-pane img, .leaflet-container .leaflet-shadow-pane img, .leaflet-container .leaflet-tile-pane img, .leaflet-container img.leaflet-image-layer, .leaflet-container .leaflet-tile { max-width: none !important; max-height: none !important; width: auto; padding: 0; } .leaflet-container img.leaflet-tile { mix-blend-mode: plus-lighter; } .leaflet-container.leaflet-touch-zoom { -ms-touch-action: pan-x pan-y; touch-action: pan-x pan-y; } .leaflet-container.leaflet-touch-drag { -ms-touch-action: pinch-zoom; touch-action: none; touch-action: pinch-zoom; } .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom { -ms-touch-action: none; touch-action: none; } .leaflet-container { -webkit-tap-highlight-color: transparent; } .leaflet-container a { -webkit-tap-highlight-color: rgba(51, 181, 229, 0.4); } .leaflet-tile { filter: inherit; visibility: hidden; } .leaflet-tile-loaded { visibility: inherit; } .leaflet-zoom-box { width: 0; height: 0; -moz-box-sizing: border-box; box-sizing: border-box; z-index: 800; } .leaflet-overlay-pane svg { -moz-user-select: none; } .leaflet-pane { z-index: 400; } .leaflet-tile-pane { z-index: 200; } .leaflet-overlay-pane { z-index: 400; } .leaflet-shadow-pane { z-index: 500; } .leaflet-marker-pane { z-index: 600; } .leaflet-tooltip-pane { z-index: 650; } .leaflet-popup-pane { z-index: 700; } .leaflet-map-pane canvas { z-index: 100; } .leaflet-map-pane svg { z-index: 200; } .leaflet-vml-shape { width: 1px; height: 1px; } .lvml { behavior: none; display: inline-block; position: absolute; } .leaflet-control { position: relative; z-index: 800; pointer-events: visiblePainted; pointer-events: auto; } .leaflet-top, .leaflet-bottom { position: absolute; z-index: 1000; pointer-events: none; } .leaflet-top { top: 0; } .leaflet-right { right: 0; } .leaflet-bottom { bottom: 0; } .leaflet-left { left: 0; } .leaflet-control { float: left; clear: both; } .leaflet-right .leaflet-control { float: right; } .leaflet-top .leaflet-control { margin-top: 10px; } .leaflet-bottom .leaflet-control { margin-bottom: 10px; } .leaflet-left .leaflet-control { margin-left: 10px; } .leaflet-right .leaflet-control { margin-right: 10px; } .leaflet-fade-anim .leaflet-popup { opacity: 0; -webkit-transition: opacity 0.2s linear; -moz-transition: opacity 0.2s linear; transition: opacity 0.2s linear; } .leaflet-fade-anim .leaflet-map-pane .leaflet-popup { opacity: 1; } .leaflet-zoom-animated { -webkit-transform-origin: 0 0; -ms-transform-origin: 0 0; transform-origin: 0 0; } svg.leaflet-zoom-animated { will-change: transform; } .leaflet-zoom-anim .leaflet-zoom-animated { -webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1); -moz-transition: -moz-transform 0.25s cubic-bezier(0,0,0.25,1); transition: transform 0.25s cubic-bezier(0,0,0.25,1); } .leaflet-zoom-anim .leaflet-tile, .leaflet-pan-anim .leaflet-tile { -webkit-transition: none; -moz-transition: none; transition: none; } .leaflet-zoom-anim .leaflet-zoom-hide { visibility: hidden; } .leaflet-interactive { cursor: pointer; } .leaflet-grab { cursor: -webkit-grab; cursor: -moz-grab; cursor: grab; } .leaflet-crosshair, .leaflet-crosshair .leaflet-interactive { cursor: crosshair; } .leaflet-popup-pane, .leaflet-control { cursor: auto; } .leaflet-dragging .leaflet-grab, .leaflet-dragging .leaflet-grab .leaflet-interactive, .leaflet-dragging .leaflet-marker-draggable { cursor: move; cursor: -webkit-grabbing; cursor: -moz-grabbing; cursor: grabbing; } .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-image-layer, .leaflet-pane > svg path, .leaflet-tile-container { pointer-events: none; } .leaflet-marker-icon.leaflet-interactive, .leaflet-image-layer.leaflet-interactive, .leaflet-pane > svg path.leaflet-interactive, svg.leaflet-image-layer.leaflet-interactive path { pointer-events: visiblePainted; pointer-events: auto; } .leaflet-container { background: #ddd; outline-offset: 1px; } .leaflet-container a { color: #0078A8; } .leaflet-zoom-box { border: 2px dotted #38f; background: rgba(255,255,255,0.5); } .leaflet-container { font-family: "Helvetica Neue", Arial, Helvetica, sans-serif; font-size: 12px; font-size: 0.75rem; line-height: 1.5; } .leaflet-bar { box-shadow: 0 1px 5px rgba(0,0,0,0.65); border-radius: 4px; } .leaflet-bar a { background-color: #fff; border-bottom: 1px solid #ccc; width: 26px; height: 26px; line-height: 26px; display: block; text-align: center; text-decoration: none; color: black; } .leaflet-bar a, .leaflet-control-layers-toggle { background-position: 50% 50%; background-repeat: no-repeat; display: block; } .leaflet-bar a:hover, .leaflet-bar a:focus { background-color: #f4f4f4; } .leaflet-bar a:first-child { border-top-left-radius: 4px; border-top-right-radius: 4px; } .leaflet-bar a:last-child { border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; border-bottom: none; } .leaflet-bar a.leaflet-disabled { cursor: default; background-color: #f4f4f4; color: #bbb; } .leaflet-touch .leaflet-bar a { width: 30px; height: 30px; line-height: 30px; } .leaflet-touch .leaflet-bar a:first-child { border-top-left-radius: 2px; border-top-right-radius: 2px; } .leaflet-touch .leaflet-bar a:last-child { border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; } .leaflet-control-zoom-in, .leaflet-control-zoom-out { font: bold 18px 'Lucida Console', Monaco, monospace; text-indent: 1px; } .leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out { font-size: 22px; } .leaflet-control-layers { box-shadow: 0 1px 5px rgba(0,0,0,0.4); background: #fff; border-radius: 5px; } .leaflet-control-layers-toggle { background-image: none; width: 36px; height: 36px; } .leaflet-retina .leaflet-control-layers-toggle { background-image: none; background-size: 26px 26px; } .leaflet-touch .leaflet-control-layers-toggle { width: 44px; height: 44px; } .leaflet-control-layers .leaflet-control-layers-list, .leaflet-control-layers-expanded .leaflet-control-layers-toggle { display: none; } .leaflet-control-layers-expanded .leaflet-control-layers-list { display: block; position: relative; } .leaflet-control-layers-expanded { padding: 6px 10px 6px 6px; color: #333; background: #fff; } .leaflet-control-layers-scrollbar { overflow-y: scroll; overflow-x: hidden; padding-right: 5px; } .leaflet-control-layers-selector { margin-top: 2px; position: relative; top: 1px; } .leaflet-control-layers label { display: block; font-size: 13px; font-size: 1.08333em; } .leaflet-control-layers-separator { height: 0; border-top: 1px solid #ddd; margin: 5px -10px 5px -6px; } .leaflet-default-icon-path { background-image: none; } .leaflet-container .leaflet-control-attribution { background: #fff; background: rgba(255, 255, 255, 0.8); margin: 0; } .leaflet-control-attribution, .leaflet-control-scale-line { padding: 0 5px; color: #333; line-height: 1.4; } .leaflet-control-attribution a { text-decoration: none; } .leaflet-control-attribution a:hover, .leaflet-control-attribution a:focus { text-decoration: underline; } .leaflet-attribution-flag { display: inline !important; vertical-align: baseline !important; width: 1em; height: 0.6669em; } .leaflet-left .leaflet-control-scale { margin-left: 5px; } .leaflet-bottom .leaflet-control-scale { margin-bottom: 5px; } .leaflet-control-scale-line { border: 2px solid #777; border-top: none; line-height: 1.1; padding: 2px 5px 1px; white-space: nowrap; -moz-box-sizing: border-box; box-sizing: border-box; background: rgba(255, 255, 255, 0.8); text-shadow: 1px 1px #fff; } .leaflet-control-scale-line:not(:first-child) { border-top: 2px solid #777; border-bottom: none; margin-top: -2px; } .leaflet-control-scale-line:not(:first-child):not(:last-child) { border-bottom: 2px solid #777; } .leaflet-touch .leaflet-control-attribution, .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar { box-shadow: none; } .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar { border: 2px solid rgba(0,0,0,0.2); background-clip: padding-box; } .leaflet-popup { position: absolute; text-align: center; margin-bottom: 20px; } .leaflet-popup-content-wrapper { padding: 1px; text-align: left; border-radius: 12px; } .leaflet-popup-content { margin: 13px 24px 13px 20px; line-height: 1.3; font-size: 13px; font-size: 1.08333em; min-height: 1px; } .leaflet-popup-content p { margin: 17px 0; margin: 1.3em 0; } .leaflet-popup-tip-container { width: 40px; height: 20px; position: absolute; left: 50%; margin-top: -1px; margin-left: -20px; overflow: hidden; pointer-events: none; } .leaflet-popup-tip { width: 17px; height: 17px; padding: 1px; margin: -10px auto 0; pointer-events: auto; -webkit-transform: rotate(45deg); -moz-transform: rotate(45deg); -ms-transform: rotate(45deg); transform: rotate(45deg); } .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: white; color: #333; box-shadow: 0 3px 14px rgba(0,0,0,0.4); } .leaflet-container a.leaflet-popup-close-button { position: absolute; top: 0; right: 0; border: none; text-align: center; width: 24px; height: 24px; font: 16px/24px Tahoma, Verdana, sans-serif; color: #757575; text-decoration: none; background: transparent; } .leaflet-container a.leaflet-popup-close-button:hover, .leaflet-container a.leaflet-popup-close-button:focus { color: #585858; } .leaflet-popup-scrolled { overflow: auto; } .leaflet-oldie .leaflet-popup-content-wrapper { -ms-zoom: 1; } .leaflet-oldie .leaflet-popup-tip { width: 24px; margin: 0 auto; -ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)"; filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678); } .leaflet-oldie .leaflet-control-zoom, .leaflet-oldie .leaflet-control-layers, .leaflet-oldie .leaflet-popup-content-wrapper, .leaflet-oldie .leaflet-popup-tip { border: 1px solid #999; } .leaflet-div-icon { background: #fff; border: 1px solid #666; } .leaflet-tooltip { position: absolute; padding: 6px; background-color: #fff; border: 1px solid #fff; border-radius: 3px; color: #222; white-space: nowrap; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; pointer-events: none; box-shadow: 0 1px 3px rgba(0,0,0,0.4); } .leaflet-tooltip.leaflet-interactive { cursor: pointer; pointer-events: auto; } .leaflet-tooltip-top:before, .leaflet-tooltip-bottom:before, .leaflet-tooltip-left:before, .leaflet-tooltip-right:before { position: absolute; pointer-events: none; border: 6px solid transparent; background: transparent; content: ""; } .leaflet-tooltip-bottom { margin-top: 6px; } .leaflet-tooltip-top { margin-top: -6px; } .leaflet-tooltip-bottom:before, .leaflet-tooltip-top:before { left: 50%; margin-left: -6px; } .leaflet-tooltip-top:before { bottom: 0; margin-bottom: -12px; border-top-color: #fff; } .leaflet-tooltip-bottom:before { top: 0; margin-top: -12px; margin-left: -6px; border-bottom-color: #fff; } .leaflet-tooltip-left { margin-left: -6px; } .leaflet-tooltip-right { margin-left: 6px; } .leaflet-tooltip-left:before, .leaflet-tooltip-right:before { top: 50%; margin-top: -6px; } .leaflet-tooltip-left:before { right: 0; margin-right: -12px; border-left-color: #fff; } .leaflet-tooltip-right:before { left: 0; margin-left: -12px; border-right-color: #fff; } @media print { .leaflet-control { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.mapwrap{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.mapbox{height:440px;width:100%;background:var(--surface-2);z-index:0}
+.leaflet-container{background:var(--surface-2);font-family:var(--f-body);font-size:13px}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.leaflet-popup-content-wrapper{border-radius:12px}
+.leaflet-popup-content{margin:12px 14px;min-width:190px}
+.leaflet-popup-content p{margin:2px 0}
+.leaflet-container a.leaflet-popup-close-button{color:var(--muted)}
+.leaflet-control-zoom a,.leaflet-bar a{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--surface) 85%,transparent)!important;color:var(--muted)}
+.leaflet-control-attribution a{color:var(--brand)}
+.mk{display:grid!important;place-items:center;border-radius:50%;color:#fff;font:700 11px/1 var(--f-mono);border:2px solid var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.mk.ok{background:var(--ok)}.mk.warn{background:var(--warn)}.mk.bad{background:var(--bad)}
+.mk.live{outline:3px solid var(--accent);outline-offset:1px}
+.mk.me{background:#2F6FE4}
+.mk.depot{background:var(--ink);color:var(--bg);border-radius:6px}
+.area-lbl{font:600 11px/1 var(--f-body);color:var(--muted);white-space:nowrap;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg);pointer-events:none}
+.lf-river{stroke:var(--brand);stroke-opacity:.28}
+.z-bad{stroke:var(--bad);fill:var(--bad)}.z-warn{stroke:var(--warn);fill:var(--warn)}.z-ok{stroke:var(--ok);fill:var(--ok)}
+.lf-link{stroke:var(--bad)}.lf-link.risk{stroke:var(--warn)}
+.map-note{font-size:.8rem;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:8px 10px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+@media (max-width:640px){.mapbox{height:340px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><span id="logo1"></span><div><b>HygiQ</b><small>Trust on every plate</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="rail-foot">
+      <button class="btn" data-act="demo">Play demo</button>
+      <button class="btn ghost sm" data-act="reset">Reset sample data</button>
+      <p class="small muted" style="padding:0 6px">Sample data for the TechForFood demo. AI runs live when Claude is connected.</p>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="brand mob-brand"><span id="logo2"></span><b style="font-size:1.05rem">HygiQ</b></div>
+      <div class="roles" id="roles" role="group" aria-label="Who is using the app"></div>
+      <div class="top-r"><div class="ai-pill" id="aiPill" data-s="wait"><span class="dot"></span><span id="aiTxt">Connecting AI…</span></div><button class="btn sm" data-act="demo" id="demoTop"></button></div>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<nav class="bottom-nav" id="bnav"></nav>
+
+<button class="fab" id="fab" aria-label="Ask HygiQ AI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9 11h.01M12 11h.01M15 11h.01"/></svg><span class="fab-l">Ask HygiQ AI</span></button>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="panel" id="panel" aria-label="HygiQ assistant">
+  <div class="panel-h">
+    <span id="logo3"></span>
+    <div style="flex:1;min-width:0"><h3>HygiQ AI</h3><p class="small muted" id="panelSub">AI food-safety assistant</p></div>
+    <button class="icon-btn" id="speakBtn" type="button" aria-pressed="false" aria-label="Read replies aloud" title="Read replies aloud"></button>
+    <select id="lang" aria-label="Reply language"><option>English</option><option value="Hindi">हिंदी</option><option value="Marathi">मराठी</option></select>
+    <button class="icon-btn" id="closePanel" aria-label="Close assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="msgs" id="msgs"></div>
+  <div class="suggest" id="suggest"></div>
+  <div class="voice-hint" id="voiceHint" hidden></div>
+  <div class="attach-prev" id="attachPrev" hidden></div>
+  <form class="composer" id="composer">
+    <label class="icon-btn" title="Attach a photo"><input type="file" id="chatFile" accept="image/*" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></label>
+    <button class="icon-btn" type="button" id="micBtn" aria-label="Speak your question" title="Speak (English, Hindi or Marathi)"></button>
+    <textarea id="chatIn" rows="1" placeholder="Ask, or tap the mic and speak…"></textarea>
+    <button class="icon-btn" type="submit" id="sendBtn" aria-label="Send" style="background:var(--brand);color:var(--on-brand);border-color:var(--brand)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </form>
+</aside>
+<div class="demo-bar" id="demoBar" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ================= helpers ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const iso=n=>{const d=new Date(TODAY);d.setDate(d.getDate()+n);return ymd(d)};
+const daysLeft=e=>e?Math.round((new Date(e+'T00:00:00')-TODAY)/864e5):null;
+const fmtDate=e=>e?new Date(e+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
+const hhmm=t=>new Date(t).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false});
+const rel=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
+const H=new Date().getHours();
+const minsSince=t=>Math.floor((Date.now()-t)/6e4);
+const uid=()=>Math.random().toString(36).slice(2,9);
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2800)}
+const store={get(k,d){try{const v=localStorage.getItem('rr_'+k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem('rr_'+k,JSON.stringify(v))}catch{}}};
+
+const IC={
+ today:'<path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+ hygiene:'<path d="M7 3v5a5 5 0 0 0 10 0V3"/><path d="M12 13v8M8 21h8"/>',
+ stock:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 10h16M8 6.5h2M8 14h2"/>',
+ menu:'<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+ team:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+ complaints:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
+ report:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+ explore:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',
+ guest:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/>',
+ flag:'<path d="M5 21V4h11l-2 4 2 4H5"/>',
+ fridge:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 10h14M9 5v2M9 13v3"/>',
+ check:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+ map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+ risk:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ cam:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+ spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+ warn:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
+ tick:'<path d="M5 12l5 5 9-10"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ siren:'<path d="M7 18v-6a5 5 0 0 1 10 0v6"/><path d="M5 18h14v3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4"/>',
+ heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+ thermo:'<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/>',
+ shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+ hand:'<path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-1a5 5 0 0 1-4.3-2.4L3.5 14a1.5 1.5 0 0 1 2.5-1.6L8 15"/>',
+ play:'<path d="M7 4l13 8-13 8z"/>',
+ dl:'<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
+ eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+ mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+ speaker:'<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+ mute:'<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/>'
+};
+const ic=(n,s='')=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${s}>${IC[n]||''}</svg>`;
+const LOGO=(s=30)=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l12 4.5v8.8c0 7.3-5 12.6-12 14.7C9 27.9 4 22.6 4 15.3V6.5z" fill="var(--brand)"/><path d="M10 15.5c0-3.6 2.7-6.5 6-6.5s6 2.9 6 6.5H10z" fill="var(--accent)"/><path d="M9 17.5h14" stroke="var(--on-brand)" stroke-width="2" stroke-linecap="round"/><path d="M13 21.5h6" stroke="var(--on-brand)" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+/* ================= reference data ================= */
+const ALG={gluten:'Gluten',dairy:'Milk / dairy',peanut:'Peanut',treenut:'Tree nuts',egg:'Egg',soy:'Soy',fish:'Fish',shellfish:'Shellfish',sesame:'Sesame',mustard:'Mustard'};
+const KITCHEN={id:'ann',name:'Annapurna Canteen',area:'Hinjewadi',supplier:'Sai Dairy Supplies'};
+const RANGES={fridge:{min:0,max:5,label:'Fridge',target:3.5},freezer:{min:-25,max:-15,label:'Freezer',target:-19},hot:{min:63,max:85,label:'Hot-holding',target:70}};
+const SECTIONS={opening:'Opening',cooking:'Cooking',cleaning:'Cleaning',closing:'Closing'};
+const TASKS=[
+ ['health','opening','Staff health check: no fever, vomiting or diarrhoea',7],
+ ['wash','opening','Handwash station stocked (soap, water, towels)',7],
+ ['temp','opening','Fridge, freezer and bain-marie temperatures logged',8],
+ ['pest','opening','Pest check: traps, drains and dry store',8],
+ ['hair','cooking','Staff wearing hairnets, aprons and gloves',10],
+ ['board','cooking','Veg and non-veg boards and knives kept separate',10],
+ ['reheat','cooking','Curries and rice reheated to 75°C before serving',12],
+ ['allg','cooking','Allergen labels on every counter dish',12],
+ ['surf','cleaning','Cooking surfaces cleaned after breakfast',11],
+ ['floor','cleaning','Floors swept and mopped',15],
+ ['utensil','cleaning','Utensils washed in hot water and air-dried',16],
+ ['label','closing','Leftovers labelled with dish, date and time',21],
+ ['bins','closing','Waste bins emptied, lids closed',21],
+ ['gas','closing','Gas and electrical points checked',22]];
+const QUIZZES=[
+ {id:'temp',title:'Temperature control',badge:'Cold Chain Pro',icon:'thermo',qs:[
+  ['What is the safe maximum temperature for a fridge?',['8°C','5°C','10°C'],1],
+  ['Hot food on the counter must be held at or above…',['63°C','50°C','40°C'],0],
+  ['The danger zone where bacteria grow fastest is…',['-18°C to 0°C','5°C to 60°C','70°C to 90°C'],1]]},
+ {id:'allergen',title:'Allergen awareness',badge:'Allergen Guardian',icon:'shield',qs:[
+  ['Which of these is a hidden source of dairy?',['Ghee','Besan','Jaggery'],0],
+  ['Best way to avoid cross-contact?',['Wipe the ladle','Separate tools and surfaces','Cook it longer'],1],
+  ['A customer says they are allergic. You should…',['Guess from the name','Check the allergen list and tell the cook','Remove the garnish'],1]]},
+ {id:'hygiene',title:'Personal hygiene',badge:'Clean Hands Hero',icon:'hand',qs:[
+  ['Minimum handwash time?',['5 seconds','20 seconds','2 minutes'],1],
+  ['Gloves should be changed…',['Once per shift','Between raw and ready-to-eat tasks','Never'],1],
+  ['After vomiting or diarrhoea, staff stay away from food for…',['48 hours after symptoms stop','2 hours','No need'],0]]}];
+const NGOS=['Robin Hood Army','Feeding India','Local gurudwara langar','Akshaya community kitchen'];
+const AREA_LL={Hinjewadi:[18.5913,73.7389],Wakad:[18.5994,73.7629],Baner:[18.5590,73.7868],Kothrud:[18.5074,73.8077],Shivajinagar:[18.5308,73.8475],'Viman Nagar':[18.5679,73.9143],Kharadi:[18.5515,73.9348],Hadapsar:[18.5089,73.9260]};
+const DEPOTS={'Sai Dairy Supplies':[18.6298,73.8470],'Konkan Catch':[18.5167,73.8560],'Mandai Greens':[18.5110,73.8570],'Shree Grains':[18.4900,73.8740],'Pune Poultry Co.':[18.6250,73.7900]};
+const RIVER=[[18.5900,73.7600],[18.5700,73.7950],[18.5520,73.8200],[18.5380,73.8450],[18.5300,73.8650],[18.5360,73.8900],[18.5460,73.9150],[18.5530,73.9450]];
+const HOME_LL=[18.5913,73.7389];
+const AREAS={Hinjewadi:[70,120],Wakad:[165,165],Baner:[240,105],Kothrud:[215,285],Shivajinagar:[335,205],'Viman Nagar':[480,135],Kharadi:[560,180],Hadapsar:[470,300]};
+
+/* ================= mutable state (re-seedable) ================= */
+function seed(){const now=Date.now();const staff=[
+  {id:'st1',name:'Sunita Pawar',role:'Head cook',badges:['temp','hygiene']},
+  {id:'st2',name:'Ramesh Jadhav',role:'Cook',badges:['hygiene']},
+  {id:'st3',name:'Farida Shaikh',role:'Kitchen helper',badges:[]},
+  {id:'st4',name:'Vinod More',role:'Counter staff',badges:['allergen']}];
+ const hist=(base,trend,n=14)=>Array.from({length:n},(_,i)=>+(base+trend*i+(Math.sin(i*1.7)*.25)).toFixed(1));
+ return{
+ staff,
+ checklist:TASKS.map(([id,sec,task,hour],i)=>{const done=hour<Math.max(10,H)&&id!=='hair';return{id,sec,task,hour,done,doneAt:done?TODAY.getTime()+hour*36e5+(7+i)*6e4:null,by:done?staff[i%3].name:null,photo:null,ai:null}}),
+ sensors:[
+  {id:'s1',name:'Walk-in chiller',type:'fridge',hist:hist(3.4,.02)},
+  {id:'s2',name:'Dairy fridge',type:'fridge',hist:hist(3.9,.22)},
+  {id:'s3',name:'Freezer',type:'freezer',hist:hist(-19,.01)},
+  {id:'s4',name:'Bain-marie (dal, rice)',type:'hot',hist:hist(69,-.05)}],
+ tempLog:[
+  {at:now-35*6e4,sensor:'Walk-in chiller',value:3.6,by:'Sunita Pawar',probe:true},
+  {at:now-2*36e5,sensor:'Bain-marie (dal, rice)',value:71.2,by:'Ramesh Jadhav',probe:true},
+  {at:now-5*36e5,sensor:'Freezer',value:-18.8,by:'Sunita Pawar',probe:true}],
+ inventory:[
+  {id:uid(),batch:'SD-1017',name:'Milk (toned)',qty:'20 L',storage:'Dairy fridge',supplier:'Sai Dairy Supplies',arrived:iso(-3),expiry:iso(-1),alg:['dairy']},
+  {id:uid(),batch:'SD-1021',name:'Curd',qty:'8 kg',storage:'Dairy fridge',supplier:'Sai Dairy Supplies',arrived:iso(-2),expiry:iso(0),alg:['dairy']},
+  {id:uid(),batch:'SD-1022',name:'Paneer',qty:'5 kg',storage:'Dairy fridge',supplier:'Sai Dairy Supplies',arrived:iso(-2),expiry:iso(1),alg:['dairy']},
+  {id:uid(),batch:'KC-0884',name:'Surmai (kingfish)',qty:'4 kg',storage:'Walk-in chiller',supplier:'Konkan Catch',arrived:iso(-1),expiry:iso(1),alg:['fish']},
+  {id:uid(),batch:'MG-3310',name:'Fresh coriander',qty:'2 kg',storage:'Walk-in chiller',supplier:'Mandai Greens',arrived:iso(-1),expiry:iso(2),alg:[]},
+  {id:uid(),batch:'MG-3311',name:'Tomatoes',qty:'15 kg',storage:'Veg rack',supplier:'Mandai Greens',arrived:iso(-1),expiry:iso(3),alg:[]},
+  {id:uid(),batch:'PP-5520',name:'Eggs',qty:'120 pcs',storage:'Walk-in chiller',supplier:'Pune Poultry Co.',arrived:iso(-2),expiry:iso(6),alg:['egg']},
+  {id:uid(),batch:'SG-2201',name:'Besan',qty:'10 kg',storage:'Dry store',supplier:'Shree Grains',arrived:iso(-12),expiry:iso(40),alg:[]},
+  {id:uid(),batch:'SG-2207',name:'Groundnuts',qty:'5 kg',storage:'Dry store',supplier:'Shree Grains',arrived:iso(-10),expiry:iso(60),alg:['peanut']},
+  {id:uid(),batch:'SG-2190',name:'Basmati rice',qty:'25 kg',storage:'Dry store',supplier:'Shree Grains',arrived:iso(-20),expiry:iso(180),alg:[]}],
+ leftovers:[{id:uid(),dish:'Dal tadka',at:now-95*6e4},{id:uid(),dish:'Steamed rice',at:now-138*6e4}],
+ menu:[
+  {name:'Kanda poha',price:30,veg:true,ing:'Flattened rice, onion, groundnuts, curry leaves, mustard seeds',alg:['peanut','mustard'],may:[]},
+  {name:'Masala dosa',price:60,veg:true,ing:'Rice and urad batter, potato, mustard seeds, ghee; served with chutney',alg:['dairy','mustard'],may:['peanut']},
+  {name:'Paneer butter masala',price:140,veg:true,ing:'Paneer, tomato, butter, cream, cashew paste',alg:['dairy','treenut'],may:[]},
+  {name:'Chole bhature',price:90,veg:true,ing:'Chickpeas, maida bhature, curd in dough',alg:['gluten','dairy'],may:['sesame']},
+  {name:'Veg biryani',price:120,veg:true,ing:'Basmati rice, vegetables, curd, fried onion, cashews',alg:['dairy','treenut'],may:['peanut']},
+  {name:'Egg curry',price:100,veg:false,ing:'Eggs, onion-tomato gravy, mustard oil',alg:['egg','mustard'],may:[]},
+  {name:'Surmai fry',price:180,veg:false,ing:'Kingfish, rava coating, spices',alg:['fish','gluten'],may:['shellfish']},
+  {name:'Sabudana khichdi',price:50,veg:true,ing:'Sago, groundnuts, potato, green chilli',alg:['peanut'],may:[]},
+  {name:'Idli sambar',price:45,veg:true,ing:'Rice-urad idli, toor dal sambar, mustard tempering',alg:['mustard'],may:['peanut']},
+  {name:'Til chikki',price:20,veg:true,ing:'Sesame seeds, jaggery',alg:['sesame'],may:['peanut']}],
+ outlets:[
+  {id:'ann',name:'Annapurna Canteen',area:'Hinjewadi',type:'Canteen',veg:false,ll:[18.5913,73.7389],live:true,sup:['Sai Dairy Supplies','Konkan Catch','Mandai Greens','Shree Grains','Pune Poultry Co.']},
+  {id:'tb',name:'Tower B Food Court',area:'Baner',type:'Food court',veg:false,ll:[18.5602,73.7810],score:81,sup:['Sai Dairy Supplies','Pune Poultry Co.']},
+  {id:'sr',name:'Spice Route',area:'Wakad',type:'Restaurant',veg:false,ll:[18.5985,73.7650],score:49,sup:['Konkan Catch','Pune Poultry Co.']},
+  {id:'hm',name:'Hostel Mess 3',area:'Shivajinagar',type:'Canteen',veg:true,ll:[18.5300,73.8470],score:64,sup:['Sai Dairy Supplies','Mandai Greens']},
+  {id:'ck',name:'Chai Katta',area:'Kothrud',type:'Street food',veg:true,ll:[18.5070,73.8080],score:72,sup:['Sai Dairy Supplies']},
+  {id:'gb',name:'Green Bowl',area:'Viman Nagar',type:'Restaurant',veg:true,ll:[18.5670,73.9140],score:77,sup:['Mandai Greens']},
+  {id:'rd',name:'Riverside Dhaba',area:'Hadapsar',type:'Restaurant',veg:false,ll:[18.5080,73.9250],score:58,sup:['Shree Grains']},
+  {id:'p2',name:'Phase-2 Cafe',area:'Kharadi',type:'Cafe',veg:true,ll:[18.5510,73.9400],score:86,sup:['Mandai Greens']}],
+ complaints:[
+  {id:uid(),place:'Spice Route',area:'Wakad',dish:'Chicken biryani',cat:'Illness',sev:'high',hrs:5,text:'Vomiting and stomach cramps 3 hours after lunch.',status:'open',supplier:'Konkan Catch'},
+  {id:uid(),place:'Spice Route',area:'Wakad',dish:'Chicken biryani',cat:'Illness',sev:'high',hrs:9,text:'Two of us had loose motions after the biryani.',status:'open',supplier:''},
+  {id:uid(),place:'Spice Route',area:'Wakad',dish:'Chicken biryani',cat:'Illness',sev:'high',hrs:20,text:'Felt feverish and nauseous that night.',status:'open',supplier:''},
+  {id:uid(),place:'Tower B Food Court',area:'Baner',dish:'Paneer tikka',cat:'Illness',sev:'high',hrs:14,text:'Paneer tasted sour, stomach upset next morning.',status:'open',supplier:'Sai Dairy Supplies'},
+  {id:uid(),place:'Hostel Mess 3',area:'Shivajinagar',dish:'Paneer bhurji',cat:'Illness',sev:'high',hrs:22,text:'Several students with diarrhoea after dinner.',status:'open',supplier:'Sai Dairy Supplies'},
+  {id:uid(),place:'Chai Katta',area:'Kothrud',dish:'Masala chai',cat:'Stale food',sev:'medium',hrs:30,text:'Milk had curdled in the chai.',status:'reviewed',supplier:'Sai Dairy Supplies'},
+  {id:uid(),place:'Annapurna Canteen',area:'Hinjewadi',dish:'Kanda poha',cat:'Foreign object',sev:'low',hrs:6,text:'Found a hair in my poha.',status:'open',supplier:''},
+  {id:uid(),place:'Green Bowl',area:'Viman Nagar',dish:'Peanut salad',cat:'Allergic reaction',sev:'high',hrs:40,text:'Asked for no peanuts, got peanuts. Lips swelled.',status:'resolved',supplier:''},
+  {id:uid(),place:'Riverside Dhaba',area:'Hadapsar',dish:'Dal fry',cat:'Hygiene',sev:'medium',hrs:50,text:'Cockroach seen near the counter.',status:'open',supplier:''},
+  {id:uid(),place:'Phase-2 Cafe',area:'Kharadi',dish:'Sandwich',cat:'Stale food',sev:'low',hrs:60,text:'Bread was dry and stale.',status:'resolved',supplier:''}],
+ inspections:[
+  {id:uid(),outlet:'Spice Route',date:iso(-34),type:'Routine inspection',status:'done',result:'Improvement notice',findings:'Raw chicken stored above cooked rice in the chiller. Gaps in pest-proofing near the back door.'},
+  {id:uid(),outlet:'Annapurna Canteen',date:iso(-21),type:'Routine inspection',status:'done',result:'Pass',findings:'Digital records complete. Allergen labels on every counter dish.'},
+  {id:uid(),outlet:'Riverside Dhaba',date:iso(-9),type:'Complaint follow-up',status:'done',result:'Improvement notice',findings:'Cockroach activity near the counter. Pest-control contract had lapsed.'},
+  {id:uid(),outlet:'Hostel Mess 3',date:iso(3),type:'Sampling visit',status:'scheduled',urgent:false,notes:'Take paneer samples for the lab.'}],
+ aiChecks:[{id:uid(),at:now-20*36e5,photo:null,summary:'Prep counter, all clear',issues:[]}],
+ recalls:[],
+ surplus:[{id:uid(),item:'Veg pulao (8 portions)',mode:'donate',ngo:'Robin Hood Army',discount:0,pickup:'21:30',at:now-864e5,collected:true}],
+ home:[
+  {id:uid(),name:'Amul taaza milk',qty:'1 L',expiry:iso(0)},
+  {id:uid(),name:'Bread (brown)',qty:'1 pack',expiry:iso(1)},
+  {id:uid(),name:'Spinach',qty:'1 bunch',expiry:iso(1)},
+  {id:uid(),name:'Paneer',qty:'200 g',expiry:iso(2)},
+  {id:uid(),name:'Curd',qty:'400 g',expiry:iso(4)},
+  {id:uid(),name:'Leftover rajma',qty:'1 bowl',expiry:iso(-1)}],
+ family:[{name:'Aai',alg:['dairy']},{name:'Riya',alg:['peanut','treenut']},{name:'Baba',alg:[]}]
+}}
+const S=Object.assign({role:store.get('role','kitchen'),view:null,lang:store.get('lang','English'),profile:store.get('profile',['peanut']),hideUnsafe:store.get('hide',false),logAs:'st1',quiz:null,selOutlet:null,exploreQ:'',exploreVeg:false,exploreSort:'score',exploreMode:'map',me:null,layers:{outlets:true,complaints:true,links:true}},seed());
+
+/* ================= derived ================= */
+const cur=s=>s.hist[s.hist.length-1];
+const inRange=s=>{const r=RANGES[s.type];const v=cur(s);return v>=r.min&&v<=r.max};
+const due=()=>S.checklist.filter(t=>t.hour<=H);
+const ours=()=>S.complaints.filter(c=>c.place===KITCHEN.name);
+const staffName=id=>S.staff.find(s=>s.id===id)?.name||'Staff';
+/* Explainable score: checklist 25 · temperatures 30 · stock 15 · training 15 · AI checks 15 */
+function breakdown(){
+ const d=due();const doneN=d.filter(t=>t.done).length;const checklist=25*(d.length?doneN/d.length:1);
+ const okS=S.sensors.filter(inRange);const temps=30*okS.length/S.sensors.length;
+ const expired=S.inventory.filter(i=>daysLeft(i.expiry)<0);const stock=Math.max(0,15-expired.length*6);
+ const b=S.staff.reduce((a,s)=>a+s.badges.length,0),bMax=S.staff.length*QUIZZES.length;const training=15*b/bMax;
+ const last=S.aiChecks[0];const unfixed=last?last.issues.filter(i=>!i.fixed):[];const ai=Math.max(0,15-unfixed.length*5);
+ return[
+  {k:'Hygiene checklist',v:checklist,max:25,why:d.length?`${doneN} of ${d.length} checks due so far are done`:'No checks due yet today'},
+  {k:'Temperatures',v:temps,max:30,why:okS.length===S.sensors.length?'All 4 units in safe range':S.sensors.filter(s=>!inRange(s)).map(s=>`${s.name} at ${cur(s)}°C`).join(', ')+' out of range'},
+  {k:'Stock in date',v:stock,max:15,why:expired.length?`${expired.map(i=>i.name).join(', ')} expired (−6 each)`:'Nothing past its expiry date'},
+  {k:'Staff training',v:training,max:15,why:`${b} of ${bMax} training badges earned`},
+  {k:'AI photo checks',v:ai,max:15,why:unfixed.length?`${unfixed.length} unfixed issue${unfixed.length>1?'s':''} from the last photo check (−5 each)`:'Last photo check: no open issues'}];
+}
+const score=()=>Math.round(Math.min(100,breakdown().reduce((a,x)=>a+x.v,0)));
+const grade=n=>n>=85?['A','Excellent','ok']:n>=70?['B','Good','ok']:n>=55?['C','Needs work','warn']:['D','Poor','bad'];
+const outletScore=o=>o.live?score():o.score;
+function risk(o){const sc=outletScore(o);const c=S.complaints.filter(x=>x.place===o.name&&x.status!=='resolved');const hi=c.filter(x=>x.sev==='high').length;
+ let r=(100-sc)*.6+hi*15+(c.length-hi)*5;if(o.live)r+=S.sensors.filter(s=>!inRange(s)).length*5+S.inventory.filter(i=>daysLeft(i.expiry)<0).length*5;
+ r=Math.min(100,Math.round(r));return{r,level:r>=60?'High':r>=35?'Medium':'Low',tone:r>=60?'bad':r>=35?'warn':'ok',open:c.length,hi}}
+function expPill(e){const d=daysLeft(e);if(d===null)return '<span class="pill neutral">No date</span>';if(d<0)return `<span class="pill bad">Expired ${-d}d ago</span>`;if(d===0)return '<span class="pill bad">Expires today</span>';if(d<=2)return `<span class="pill warn">${d}d left</span>`;return `<span class="pill ok">${d}d left</span>`}
+const sevPill=s=>`<span class="pill ${s==='high'?'bad':s==='medium'?'warn':'neutral'}">${esc(s)}</span>`;
+const statusPill=s=>`<span class="pill ${s==='open'?'warn':s==='reviewed'?'accent':'ok'}">${esc(s)}</span>`;
+function alerts(){
+ const out=[];const ill=S.complaints.filter(c=>c.status!=='resolved'&&(c.cat==='Illness'||c.cat==='Allergic reaction'));
+ const byPlace={};ill.filter(c=>c.hrs<=48).forEach(c=>{(byPlace[c.place]=byPlace[c.place]||[]).push(c)});
+ Object.values(byPlace).filter(a=>a.length>=2).forEach(a=>out.push({title:`${a.length} illness reports at ${a[0].place}, ${a[0].area} in 48 h`,body:`Mostly after ${a[0].dish}. Recommend holding this dish and an urgent inspection.`,outlet:a[0].place}));
+ const byArea={};ill.filter(c=>c.hrs<=72&&c.sev==='high').forEach(c=>{(byArea[c.area]=byArea[c.area]||[]).push(c)});
+ Object.entries(byArea).forEach(([a,l])=>{if(l.length>=3&&new Set(l.map(c=>c.place)).size>=2)out.push({title:`Area cluster in ${a}`,body:`${l.length} serious reports across different kitchens in 72 h.`})});
+ const bySup={};S.complaints.filter(c=>c.hrs<=48&&c.supplier).forEach(c=>{(bySup[c.supplier]=bySup[c.supplier]||[]).push(c)});
+ Object.entries(bySup).forEach(([s,a])=>{const places=new Set(a.map(c=>c.place));if(a.length>=3&&places.size>=2)out.push({title:`Supplier pattern: ${s}`,body:`${a.length} complaints across ${places.size} kitchens in 48 hours, all involving this supplier's dairy. Recommend a batch check and alerting every kitchen it supplies.`,supplier:s})});
+ return out}
+
+/* ================= AI layer (multimodal: text + images) ================= */
+let SAMPLE=null,CAN_IMG=false,AI='wait',DL=null,SERVER=null;
+function setAI(s){AI=s;const p=$('#aiPill');p.dataset.s=s;$('#aiTxt').textContent=s==='live'?(SERVER&&!SAMPLE?`AI live · ${SERVER.provider==='anthropic'?'Claude':'Gemini'}`:'AI live'):s==='demo'?'AI demo mode':'Connecting AI…'}
+(async()=>{try{const s=window.claude?.use?await window.claude.use('sample'):null;SAMPLE=s;if(s){const l=await s.limits().catch(()=>null);CAN_IMG=!!l?.images;return setAI('live')}}catch{}
+ if(await findServer())return setAI('live');setAI('demo')})();
+/* Live AI outside Claude: the app's own /api/ai endpoint (Vercel function or node server.js) holds the key */
+async function findServer(){if(!/^https?:$/.test(location.protocol))return false;try{const r=await fetch('api/ai',{cache:'no-store'});const j=await r.json();if(r.ok&&j.ok){SERVER=j;return true}}catch{}return false}
+async function toB64(blob){const bmp=await createImageBitmap(blob);const k=Math.min(1,1280/Math.max(bmp.width,bmp.height));const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);const url=c.toDataURL('image/jpeg',.85);return{type:'image/jpeg',data:url.slice(url.indexOf(',')+1)}}
+async function callServer({system='',messages,images=[],json=false}){const imgs=[];for(const im of images)imgs.push(await toB64(im));
+ const r=await fetch('api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({system,messages,images:imgs,json})});let j={};try{j=await r.json()}catch{}
+ if(!r.ok)throw new Error(j.error||'The AI server could not answer. Try again.');return j.text||''}
+function parseJSONLoose(t){try{return JSON.parse(t)}catch{}const f=t.match(/```(?:json)?\s*([\s\S]*?)```/);if(f){try{return JSON.parse(f[1])}catch{}}const a=Math.min(...['{','['].map(c=>{const i=t.indexOf(c);return i<0?1e9:i})),b=Math.max(t.lastIndexOf('}'),t.lastIndexOf(']'));if(a<b){try{return JSON.parse(t.slice(a,b+1))}catch{}}throw new Error('The AI reply was not in the expected format. Try again.')}
+(async()=>{try{DL=window.claude?.use?await window.claude.use('downloads'):null}catch{DL=null}if(S.view==='report')render()})();
+setTimeout(()=>{if(AI==='wait')setAI('demo')},11000);
+function aiErr(e){const c=e?.code;if(c==='not_granted'||c==='sampling_disabled'||c==='not_declared'||c==='capability_disabled'||c==='capability_removed'){SAMPLE=null;setAI('demo');return null}
+ if(c==='images_unavailable'){CAN_IMG=false;return null}
+ return({rate_limited:'Too many AI requests right now. Wait a minute and try again.',image_rejected:'That image could not be read. Try a JPG or PNG under 20 MB.',refused:'The AI declined this request. Try rephrasing it.',session_expired:'Your Claude session expired. Sign in again.',invalid_json:'The AI reply was not in the expected format. Try again.'})[c]||'The AI could not answer just now. Try again.'}
+async function askJSON(prompt,{images,fallback,tier}={}){
+ const useImg=images&&images.length;
+ if(!SAMPLE&&SERVER)return parseJSONLoose(await callServer({messages:[{role:'user',content:prompt}],images:useImg?[...images]:[],json:true}));
+ if(!SAMPLE||(useImg&&!CAN_IMG)){await new Promise(r=>setTimeout(r,900));return{...fallback(),_demo:true}}
+ try{return await SAMPLE.json(prompt,{images:useImg?images:undefined,modelTier:tier||'default',cache:false})}
+ catch(e){const m=aiErr(e);if(m===null)return{...fallback(),_demo:true};throw new Error(m)}}
+async function askText(prompt,{onText,fallback}={}){
+ if(!SAMPLE&&SERVER){const t=await callServer({messages:[{role:'user',content:prompt}]});onText?.(t);return{text:t}}
+ if(!SAMPLE){await new Promise(r=>setTimeout(r,700));const t=fallback();onText?.(t);return{text:t,_demo:true}}
+ try{return await SAMPLE(prompt,{onText:({text})=>onText?.(text),cache:false})}
+ catch(e){const m=aiErr(e);if(m===null){const t=fallback();onText?.(t);return{text:t,_demo:true}}throw new Error(m)}}
+function md(t){const lines=esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/_(.+?)_/g,'<i>$1</i>').split('\n');let h='',ul=false;
+ for(const l of lines){const m=l.match(/^\s*[-*•]\s+(.*)/)||l.match(/^\s*\d+[.)]\s+(.*)/);
+  if(m){if(!ul){h+='<ul>';ul=true}h+=`<li>${m[1]}</li>`}else{if(ul){h+='</ul>';ul=false}if(l.trim())h+=`<p>${l.replace(/^#+\s*/,'')}</p>`}}
+ return h+(ul?'</ul>':'')}
+const demoNote=r=>r?._demo?'<span class="demo-tag">Demo result. For live AI, run with an AI key (see README) or open the Claude link.</span>':'';
+const pending={};
+function snapshot(){return JSON.stringify({today:ymd(TODAY),kitchen:KITCHEN,safety_score:score(),score_breakdown:breakdown().map(b=>({part:b.k,points:+b.v.toFixed(1),max:b.max,why:b.why})),
+ checklist:S.checklist.map(t=>({task:t.task,section:t.sec,due:t.hour+':00',done:t.done,by:t.by})),
+ stock:S.inventory.map(i=>({item:i.name,batch:i.batch,qty:i.qty,supplier:i.supplier,expiry:i.expiry,days_left:daysLeft(i.expiry)})),
+ sensors:S.sensors.map(s=>({name:s.name,now_c:cur(s),safe_range:RANGES[s.type].min+' to '+RANGES[s.type].max+' C',in_range:inRange(s)})),
+ leftovers:S.leftovers.map(l=>({dish:l.dish,minutes_out:minsSince(l.at)})),
+ menu:S.menu.map(m=>({dish:m.name,ingredients:m.ing,allergens:m.alg,may_contain:m.may})),
+ staff:S.staff.map(s=>({name:s.name,role:s.role,badges:s.badges})),last_photo_check:S.aiChecks[0]&&{issues:S.aiChecks[0].issues.map(i=>({title:i.title,fixed:!!i.fixed}))},
+ recalls:S.recalls.map(r=>({item:r.item,batch:r.batch,reason:r.reason})),surplus:S.surplus.map(s=>({item:s.item,mode:s.mode,collected:s.collected})),
+ our_complaints:ours().map(c=>({dish:c.dish,category:c.cat,severity:c.sev,status:c.status,text:c.text})),
+ customer_allergies:S.profile,home_fridge:S.home.map(i=>({item:i.name,days_left:daysLeft(i.expiry)})),family:S.family,
+ city:{alerts:alerts().map(a=>a.title),outlets_by_risk:S.outlets.map(o=>({name:o.name,area:o.area,score:outletScore(o),risk:risk(o).level})).sort((a,b)=>a.score-b.score),upcoming_inspections:S.inspections.filter(i=>i.status==='scheduled').map(i=>({outlet:i.outlet,date:i.date,type:i.type}))}})}
+
+/* ================= navigation ================= */
+const ROLES={
+ kitchen:{label:'Kitchen staff',views:[['today','Today','today'],['hygiene','Hygiene','hygiene'],['stock','Stock & temps','stock'],['menu','Menu','menu'],['team','Team training','team'],['complaints','Complaints','complaints'],['report','Audit report','report']]},
+ customer:{label:'Customer',views:[['explore','Explore','explore'],['guest','Kitchen live','guest'],['complain','Report a problem','flag']]},
+ home:{label:'Home',views:[['fridge','My fridge','fridge'],['check','Check food','check']]},
+ inspector:{label:'Inspector',views:[['map','City watch','map'],['outlets','Outlets by risk','risk'],['inspections','Inspections','cal']]}};
+function go(v){S.view=v;render();window.scrollTo({top:0})}
+function setRole(r,v){S.role=r;store.set('role',r);S.view=v||ROLES[r].views[0][0];render();renderSuggest()}
+function renderChrome(){
+ $('#roles').innerHTML=Object.entries(ROLES).map(([k,r])=>`<button aria-pressed="${k===S.role}" data-role="${k}">${r.label}</button>`).join('');
+ const openC=ours().filter(c=>c.status!=='resolved').length;
+ const btns=ROLES[S.role].views.map(([k,l,i])=>`<button data-go="${k}" ${k===S.view?'aria-current="page"':''}>${ic(i)}<span>${l}</span>${k==='complaints'&&openC?`<span class="count">${openC}</span>`:''}</button>`).join('');
+ $('#nav').innerHTML=btns;$('#bnav').innerHTML=btns;
+ const playing=!!DEMO.on;document.querySelectorAll('[data-act=demo]').forEach(b=>b.innerHTML=`${ic(playing?'clock':'play')}${playing?'Demo playing…':'Play demo'}`);
+}
+function render(){Object.values(MAPS).forEach(m=>{try{m.stop?.();m.off();m.remove()}catch{}});MAPS={};if(!S.view||!V[S.view])S.view=ROLES[S.role].views[0][0];renderChrome();$('#view').innerHTML=V[S.view]();after[S.view]?.()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-role],[data-go],[data-act]');if(!b||b.disabled)return;
+ if(b.dataset.role)return setRole(b.dataset.role);if(b.dataset.go)return go(b.dataset.go);ACT[b.dataset.act]?.(b,e)},true);
+document.addEventListener('change',e=>{const f=e.target;if(f.matches('input[type=file][data-pick]')){const file=f.files[0];if(!file)return;pending[f.dataset.pick]=file;const box=f.closest('.drop');const url=URL.createObjectURL(file);const ph=box.querySelector('.ph,img');ph.outerHTML=`<img src="${url}" alt="Selected photo">`;box.querySelector('.fname').textContent=file.name}});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.area')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
+
+/* ================= shared UI bits ================= */
+function ring(n,size=120){const [g,,tone]=grade(n);const r=48,c=2*Math.PI*r;return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 120 120" role="img" aria-label="Safety score ${n} out of 100"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="11"/><circle class="arc" cx="60" cy="60" r="${r}" fill="none" stroke="var(--${tone})" stroke-width="11" stroke-linecap="round" stroke-dasharray="${c*n/100} ${c}" transform="rotate(-90 60 60)"/><text x="60" y="62" text-anchor="middle" font-size="34">${n}</text><text x="60" y="84" text-anchor="middle" font-size="12" style="fill:var(--muted);font-family:var(--f-body);font-weight:600">Grade ${g}</text></svg>`}
+function spark(s){const h=s.hist,r=RANGES[s.type],w=220,ht=56;const lo=Math.min(...h,r.min===-25?-21:r.min)-1,hi=Math.max(...h,r.max===85?73:r.max)+1;const lim=s.type==='hot'?r.min:r.max;
+ const x=i=>i/(h.length-1)*w,y=v=>ht-4-(v-lo)/(hi-lo)*(ht-8);const pts=h.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');const tone=inRange(s)?'ok':'bad';
+ return `<svg class="spark" viewBox="0 0 ${w} ${ht}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="${w}" y1="${y(lim)}" y2="${y(lim)}" stroke="var(--bad)" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"/><polygon points="0,${ht} ${pts} ${w},${ht}" fill="var(--${tone})" opacity=".12"/><polyline points="${pts}" fill="none" stroke="var(--${tone})" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${x(h.length-1)}" cy="${y(h[h.length-1])}" r="3.5" fill="var(--${tone})"/></svg>`}
+function drop(key,title,hint){return `<label class="drop"><input type="file" accept="image/*" data-pick="${key}" hidden><span class="ph">${ic('cam')}</span><span style="min-width:0"><b>${title}</b><br><span class="small muted">${hint}</span><br><span class="small mono fname"></span></span></label>`}
+function leftoverRow(l){const m=minsSince(l.at);const tone=m>=120?'bad':m>=90?'warn':'ok';return `<div class="row"><span class="stripe ${tone}"></span><div class="grow"><div class="t">${esc(l.dish)}</div><div class="s"><span data-since="${l.at}">${m}</span> min at room temperature</div></div>${m>=120?'<span class="pill bad">Over 2 h · discard or reheat to 75°C</span>':m>=90?'<span class="pill warn">Chill or serve soon</span>':'<span class="pill ok">OK</span>'}<button class="btn sm ghost" data-act="leftoverDone" data-id="${l.id}">Cleared</button></div>`}
+function breakdownHTML(){return `<div class="breakdown">${breakdown().map(b=>{const p=b.v/b.max;return `<div><div class="small" style="display:flex;justify-content:space-between;gap:8px"><b>${b.k}</b><span class="mono">${b.v.toFixed(0)} / ${b.max}</span></div><div class="bar"><i style="width:${p*100}%;background:var(--${p>=.8?'ok':p>=.5?'warn':'bad'})"></i></div><div class="why">${esc(b.why)}</div></div>`}).join('')}</div>`}
+function shotHTML(check,{scanning=false}={}){if(!check)return '';const src=check.photo;
+ return `<div class="shot">${src?`<img src="${src}" alt="Kitchen photo checked by AI">`:''}${scanning?'<div class="scan"></div>':''}${(check.issues||[]).map((i,n)=>{const[b0,b1,b2,b3]=(i.box||[0,0,0,0]).map(v=>Math.max(0,Math.min(100,+v||0)));return `<div class="vbox ${i.fixed?'fixed':i.severity}" style="left:${b0}%;top:${b1}%;width:${Math.min(b2,100-b0)}%;height:${Math.min(b3,100-b1)}%"><span>${n+1}</span></div>`}).join('')}</div>`}
+function issuesHTML(check){if(!check)return '';if(!check.issues.length)return `<div class="alert okb">${ic('tick')}<div><b>No violations found.</b><p class="small">${esc(check.summary||'')}</p></div></div>`;
+ return `<div class="list">${check.issues.map((i,n)=>`<div class="row" style="align-items:flex-start"><span class="pill ${i.fixed?'ok':i.severity==='high'?'bad':i.severity==='medium'?'warn':'accent'} mono">${n+1}</span><div class="grow"><div class="t" style="${i.fixed?'text-decoration:line-through;color:var(--muted)':''}">${esc(i.title)}</div><div class="s">Fix: ${esc(i.fix)}</div></div>${i.fixed?'<span class="pill ok">Fixed</span>':`<button class="btn sm" data-act="fixIssue" data-n="${n}">Mark fixed</button>`}</div>`).join('')}</div>`}
+function qrCells(){const p='111111101100000101101110101101110101100000101111111101000000001101011011';let h='';for(let i=0;i<81;i++)h+=`<i class="${p[(i*7)%p.length]==='1'?'':'o'}"></i>`;return h}
+const staffSelect=(id='logAs')=>`<select id="${id}" style="width:auto">${S.staff.map(s=>`<option value="${s.id}" ${s.id===S.logAs?'selected':''}>${esc(s.name)}</option>`).join('')}</select>`;
+
+/* ================= maps (Leaflet + CARTO/OpenStreetMap tiles) ================= */
+let MAPS={};
+function distKm(o){const[a1,b1]=S.me||HOME_LL,[a2,b2]=o.ll,R=6371,r=x=>x*Math.PI/180;const d=Math.sin(r(a2-a1)/2)**2+Math.cos(r(a1))*Math.cos(r(a2))*Math.sin(r(b2-b1)/2)**2;return 2*R*Math.asin(Math.sqrt(d))}
+const isDark=()=>{const t=document.documentElement.dataset.theme;return t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)};
+function makeMap(id,center,zoom){const el=document.getElementById(id);if(!window.L||!el)return null;
+ const m=L.map(el,{scrollWheelZoom:false,zoomControl:true}).setView(center,zoom);
+ const t=L.tileLayer(`https://{s}.basemaps.cartocdn.com/${isDark()?'dark_all':'light_all'}/{z}/{x}/{y}{r}.png`,{subdomains:'abcd',maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'}).addTo(m);
+ let ok=0,bad=0;t.on('tileload',()=>{ok++});t.on('tileerror',()=>{bad++;if(bad===4&&!ok&&!el.parentNode.parentNode.querySelector('.map-note')){const n=document.createElement('div');n.className='map-note';n.textContent='Street tiles are blocked in this viewer, so you see a simplified map. Open the localhost or Vercel version for full street detail.';el.parentNode.after(n)}});
+ L.polyline(RIVER,{className:'lf-river',weight:9,interactive:false}).addTo(m);
+ Object.entries(AREA_LL).forEach(([a,ll])=>L.marker([ll[0]-.0075,ll[1]],{icon:L.divIcon({className:'area-lbl',html:a,iconSize:[90,14],iconAnchor:[45,0]}),interactive:false,keyboard:false}).addTo(m));
+ MAPS[id]=m;setTimeout(()=>{if(MAPS[id]===m)m.invalidateSize({animate:false})},60);return m}
+
+/* ================= KITCHEN views ================= */
+const V={},after={};
+V.today=()=>{const sc=score();const[,word,tone]=grade(sc);const d=due();const overdue=d.filter(t=>!t.done);const exp=S.inventory.filter(i=>daysLeft(i.expiry)<=1).sort((a,b)=>daysLeft(a.expiry)-daysLeft(b.expiry));const bad=S.sensors.filter(s=>!inRange(s));const al=alerts().filter(a=>a.supplier===KITCHEN.supplier);const lastAI=S.aiChecks[0];const openAI=lastAI?lastAI.issues.filter(i=>!i.fixed):[];
+ return `<div class="pagehead"><div><span class="label">${esc(KITCHEN.name)} · ${esc(KITCHEN.area)}, Pune</span><h1>Good ${H<5?'evening':H<12?'morning':H<17?'afternoon':'evening'}, kitchen team</h1><p>${TODAY.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}. Here is what needs attention right now.</p></div><button class="btn primary" data-act="openChat" data-q="What should I do first today?">${ic('spark')}Plan my shift</button></div>
+ ${bad.map(s=>`<div class="alert">${ic('thermo')}<div style="flex:1;min-width:0"><b>${esc(s.name)} is at ${cur(s)}°C</b><p class="small">Safe range is ${RANGES[s.type].min} to ${RANGES[s.type].max}°C. ${s.type==='hot'?'Reheat food to 75°C or move it to the fridge.':'Check the door seal and move high-risk food to another unit.'}</p></div><button class="btn sm" data-act="repair" data-id="${s.id}">Mark repaired</button></div>`).join('')}
+ ${al.map(a=>`<div class="alert warn">${ic('warn')}<div style="flex:1;min-width:0"><b>${esc(a.title)}</b><p class="small">${esc(a.body)} You buy dairy from this supplier. Check today's paneer and curd batches, or recall them.</p></div><button class="btn sm" data-go="stock">Review batches</button></div>`).join('')}
+ <div class="grid" style="grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr)" id="todayGrid">
+  <div class="card"><div class="hero">${ring(sc)}<div style="display:grid;gap:6px"><span class="pill ${tone}" style="justify-self:start">${word}</span><h2>Live hygiene score</h2><p class="small muted">Every point traces back to a log. Customers see this score when they scan your counter QR.</p></div></div>${breakdownHTML()}</div>
+  <div class="card"><div class="card-h"><h3>Do now</h3><span class="pill ${overdue.length+openAI.length?'warn':'ok'}">${overdue.length+openAI.length} open</span></div><div class="list">
+   ${overdue.map(t=>`<div class="row"><span class="stripe warn"></span><div class="grow"><div class="t small">${esc(t.task)}</div><div class="s">${SECTIONS[t.sec]} · due ${t.hour}:00</div></div></div>`).join('')}
+   ${openAI.map(i=>`<div class="row"><span class="stripe bad"></span><div class="grow"><div class="t small">${esc(i.title)}</div><div class="s">From the AI photo check · ${esc(i.fix)}</div></div></div>`).join('')}
+   ${overdue.length+openAI.length?'':'<div class="empty">All due checks are done.</div>'}</div>
+   <div class="chips"><button class="btn sm" data-go="hygiene">Open checklist</button><button class="btn sm" data-go="hygiene">${ic('cam')}Photo check</button></div></div>
+  <div class="card"><div class="card-h"><h3>Use first</h3><span class="label">FIFO</span></div><div class="list">${exp.map(i=>`<div class="row"><div class="grow"><div class="t small">${esc(i.name)}</div><div class="s">${esc(i.qty)} · ${esc(i.storage)}</div></div>${expPill(i.expiry)}</div>`).join('')}</div>
+   <div class="chips"><button class="btn sm" data-act="openChat" data-q="What can we cook with stock that expires soon?">${ic('spark')}Suggest dishes</button><button class="btn sm" data-go="stock">${ic('heart')}List surplus</button></div></div>
+ </div>
+ <div class="grid g2">
+  <div class="card"><div class="card-h"><h3>Leftover timers</h3><span class="small muted">2-hour rule, 5–60°C danger zone</span></div><div class="list">${S.leftovers.map(leftoverRow).join('')||'<div class="empty">No food set aside.</div>'}</div>
+   <form class="grid" style="grid-template-columns:1fr auto;gap:8px" data-form="leftover"><input type="text" id="leftDish" placeholder="Dish set aside, e.g. Veg pulao" aria-label="Dish set aside"><button class="btn">${ic('clock')}Start timer</button></form></div>
+  <div class="card"><div class="card-h"><h3>Cleanest kitchen, this month</h3><span class="label">Pune campus canteens</span></div><div class="list">${S.outlets.filter(o=>['Canteen','Food court','Cafe'].includes(o.type)).map(o=>[o.name,outletScore(o),o.live]).sort((a,b)=>b[1]-a[1]).map(([n,v,me],i)=>`<div class="row"><span class="mono muted" style="width:20px">${i+1}</span><div class="grow t ${me?'':'muted'}" style="${me?'color:var(--brand)':''}">${esc(n)}${me?' (you)':''}</div><span class="mono">${v}</span></div>`).join('')}</div>
+   <p class="small muted">Streak: <b style="color:var(--ink)">6 days</b> with every opening check done before 9:00.</p></div>
+ </div>`};
+after.today=()=>{bindLeftover();if(window.innerWidth<961)$('#todayGrid').style.gridTemplateColumns='1fr'};
+function bindLeftover(){document.querySelectorAll('[data-form=leftover]').forEach(f=>f.addEventListener('submit',e=>{e.preventDefault();const inp=f.querySelector('input');const v=inp.value.trim();if(!v)return toast('Type the dish name first');S.leftovers.push({id:uid(),dish:v,at:Date.now()});toast(`Timer started for ${v}`);render()}))}
+
+let SCAN=null; // in-progress violation scan
+V.hygiene=()=>{const done=S.checklist.filter(t=>t.done).length;const last=SCAN||S.aiChecks[0];
+ return `<div class="pagehead"><div><span class="label">HACCP checklist · ${esc(KITCHEN.name)}</span><h1>Hygiene</h1><p>Tick each check as you do it; it records the time and who did it. Add a photo for proof. Use the AI kitchen inspection to spot violations you might miss.</p></div><div class="field"><span class="label">Logging as</span>${staffSelect()}</div></div>
+ <div class="grid g2 wide" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)">
+  <div class="card" id="aiInspect"><div class="card-h"><h3>AI kitchen inspection</h3><span class="pill neutral">${AI==='live'?'Live vision model':'Demo model'}</span></div>
+   <p class="small muted">Take a photo of a prep station, fridge shelf or counter. HygiQ AI marks each violation on the photo and tells you how to fix it.</p>
+   ${drop('vio','Photo of your kitchen','Prep counter, fridge, staff at work')}
+   <div class="chips"><button class="btn primary" data-act="violationScan" id="vioBtn">${ic('spark')}Inspect photo</button><button class="btn" data-act="sampleScan">${ic('eye')}Try a sample photo</button></div>
+   ${last&&(last.photo||SCAN)?shotHTML(last,{scanning:!!SCAN?.scanning}):''}
+   ${SCAN?.scanning?'<p class="small muted">Looking for gloves, hair, covers, storage order, bins and dirty surfaces…</p>':last?`<div class="small muted">Last check ${rel(last.at)}${last._demo?' · <span class="demo-tag">demo result</span>':''}</div>${issuesHTML(last)}`:''}
+  </div>
+  <div class="card"><div class="card-h"><h3>Today's checks</h3><span class="pill ${done===S.checklist.length?'ok':'neutral'}">${done} of ${S.checklist.length} done</span></div>
+   ${Object.entries(SECTIONS).map(([k,l])=>{const items=S.checklist.filter(t=>t.sec===k);return `<div><div class="label" style="margin:6px 0 2px">${l}</div><div class="list">${items.map(t=>{const od=!t.done&&t.hour<=H;return `<div class="row" style="align-items:flex-start;flex-wrap:nowrap"><button class="check ${t.done?'on':''}" data-act="tick" data-id="${t.id}" aria-pressed="${t.done}" aria-label="${t.done?'Untick':'Tick'}: ${esc(t.task)}">${t.done?ic('tick'):''}</button>${t.photo?`<img class="thumb" src="${t.photo}" alt="">`:''}<div class="grow" style="min-width:0"><div class="t small">${esc(t.task)}</div><div class="s">${t.done?`<span class="mono">${hhmm(t.doneAt)}</span> · ${esc(t.by)}`:`Due ${t.hour}:00`}${od?' · <b style="color:var(--warn)">Overdue</b>':''}${t.ai?` · ${t.ai.pass?'<b style="color:var(--ok)">Photo verified</b>':'<b style="color:var(--bad)">Photo rejected</b>'}`:''}</div>${t.ai&&!t.ai.pass&&t.ai.issues?.length?`<div class="s" style="color:var(--bad)">${t.ai.issues.map(esc).join(' · ')}</div>`:''}</div>
+    <label class="btn sm ghost" title="Prove with a photo" aria-label="Add photo for ${esc(t.task)}">${ic('cam')}<input type="file" accept="image/*" hidden data-hyg="${t.id}"></label></div>`}).join('')}</div></div>`}).join('')}
+  </div></div>`};
+after.hygiene=()=>{$('#logAs').onchange=e=>S.logAs=e.target.value;
+ document.querySelectorAll('[data-hyg]').forEach(inp=>inp.addEventListener('change',async()=>{const file=inp.files[0];if(!file)return;const t=S.checklist.find(x=>x.id===inp.dataset.hyg);toast('Checking photo…');
+  try{const r=await askJSON(`You are checking a kitchen hygiene photo for an Indian commercial canteen. The task being proved is: "${t.task}". Decide whether the photo shows this task completed to food-safety standard. If the photo is unrelated to the task, pass must be false. Reply with only JSON: {"pass": boolean, "observations": [up to 3 short strings], "issues": [short strings, empty if none]}`,{images:[file],fallback:()=>({pass:true,observations:['Task visible and complete'],issues:[]})});
+   t.ai=r;t.photo=URL.createObjectURL(file);if(r.pass){t.done=true;t.doneAt=Date.now();t.by=staffName(S.logAs);toast(r._demo?'Logged with photo (demo check)':'Photo verified and logged')}else toast('Photo did not prove the task. Fix and retake.')}
+  catch(e){toast(e.message)}render()}))};
+
+V.stock=()=>{const inv=[...S.inventory].sort((a,b)=>(daysLeft(a.expiry)??999)-(daysLeft(b.expiry)??999));const near=S.inventory.filter(i=>{const d=daysLeft(i.expiry);return d!==null&&d>=0&&d<=2});
+ return `<div class="pagehead"><div><span class="label">Stock, batches and temperatures</span><h1>Stock & temps</h1><p>Sensors report every 10 minutes. Scan labels when stock arrives, recall a bad batch in one tap, and donate safe near-expiry food instead of throwing it away.</p></div></div>
+ <div class="grid g4">${S.sensors.map(s=>{const ok=inRange(s),r=RANGES[s.type];return `<div class="card" style="gap:6px"><div class="card-h"><h3 class="small" style="font-size:.95rem">${esc(s.name)}</h3><span class="pill ${ok?'ok':'bad'}">${ok?'In range':s.type==='hot'?'Too cool':'Too warm'}</span></div><div class="stat"><b>${cur(s)}°C</b><span>${r.label} · safe ${r.min} to ${r.max}°C</span></div>${spark(s)}<div class="chips">${ok?`<button class="btn sm ghost" data-act="fault" data-id="${s.id}">Simulate fault</button>`:`<button class="btn sm" data-act="repair" data-id="${s.id}">Mark repaired</button>`}</div></div>`}).join('')}</div>
+ <div id="recallBox"></div>
+ <div class="grid g2 wide" style="grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)">
+  <div class="card"><div class="card-h"><h3>Batches</h3><span class="small muted">${inv.length} batches, soonest expiry first</span></div><div class="list">
+   ${inv.map(i=>`<div class="row"><span class="stripe ${daysLeft(i.expiry)<=0?'bad':daysLeft(i.expiry)<=2?'warn':'ok'}"></span><div class="grow"><div class="t">${esc(i.name)} <span class="mono muted">${esc(i.batch||'')}</span></div><div class="s">${esc(i.qty)} · ${esc(i.storage)} · ${esc(i.supplier||'')}${i.alg?.length?' · '+i.alg.map(a=>ALG[a]||a).join(', '):''}</div></div><div style="text-align:right"><div class="mono small muted">${fmtDate(i.expiry)}</div>${expPill(i.expiry)}</div><div class="chips">${daysLeft(i.expiry)<0?`<button class="btn sm" data-act="discard" data-id="${i.id}">Discard</button>`:''}<button class="btn sm ghost" style="color:var(--bad)" data-act="recallOpen" data-id="${i.id}">${ic('siren')}Recall</button></div></div>`).join('')}
+  </div>
+  ${S.recalls.length?`<div class="label">Recall history</div><div class="list">${S.recalls.map(r=>`<div class="row"><span class="stripe bad"></span><div class="grow"><div class="t small">${esc(r.item)} · <span class="mono">${esc(r.batch)}</span></div><div class="s">${rel(r.at)} · ${r.outlets} kitchens and ~${r.customers} customers notified · ${esc(r.reason)}</div></div></div>`).join('')}</div>`:''}</div>
+  <div class="grid" style="align-content:start">
+   <div class="card"><h3>Scan a label</h3>${drop('label','Photo of the pack or label','Expiry, batch and allergens are read automatically')}
+    <button class="btn primary" data-act="scanLabel" data-target="kitchen" style="align-self:flex-start">${ic('spark')}Read label</button><div id="labelOut"></div></div>
+   <div class="card" id="voiceLogCard"><div class="card-h"><h3>Voice log a delivery</h3><span class="pill accent">${ic('mic')}EN · हिं · मरा</span></div><p class="small muted">Hands full? Say what arrived, in English, Hindi or Marathi. HygiQ AI adds it to stock with the expiry date.</p>
+    <div class="grid" style="grid-template-columns:auto minmax(0,1fr);gap:8px"><button class="icon-btn" type="button" data-act="voiceLogMic" id="vlMic" aria-label="Speak the delivery">${ic('mic')}</button><input type="text" id="vlText" placeholder="Paneer 5 kilo aaya, expiry 28 tareekh, Sai Dairy" aria-label="Delivery, spoken or typed"></div>
+    <button class="btn primary" data-act="voiceLogGo" style="align-self:flex-start">${ic('spark')}Add to stock</button><div id="vlOut"></div></div>
+   <div class="card"><h3>Log a probe reading</h3><p class="small muted">For spot checks with a hand-held thermometer.</p>
+    <form class="grid" style="grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr) auto;gap:8px" data-form="probe"><select id="probeS" aria-label="Unit">${S.sensors.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select><input type="number" step="0.1" id="probeV" placeholder="°C" aria-label="Temperature in °C"><button class="btn">Log</button></form>
+    <div class="list">${S.tempLog.slice(0,4).map(l=>`<div class="row"><span class="time">${hhmm(l.at)}</span><div class="grow small">${esc(l.sensor)} · ${esc(l.by)}</div><span class="mono small">${l.value}°C</span>${l.ok===false?'<span class="pill bad">Out</span>':''}</div>`).join('')}</div></div>
+  </div>
+ </div>
+ <div class="grid g2">
+  <div class="card"><div class="card-h"><h3>Surplus food</h3><span class="pill ok">${ic('heart')}${S.surplus.filter(s=>s.mode==='donate').length} donations</span></div><p class="small muted">Safe food that is close to its date: sell it at a discount to customers, or donate it to an NGO for pickup tonight.</p>
+   <div class="grid g2" style="gap:8px"><div class="field"><label class="label" for="spItem">Food</label><select id="spItem">${near.map(i=>`<option>${esc(i.name)} (${esc(i.qty)})</option>`).join('')}<option>Cooked food: veg pulao (8 portions)</option><option>Cooked food: dal tadka (6 portions)</option></select></div>
+    <div class="field"><label class="label" for="spMode">How</label><select id="spMode"><option value="donate">Donate to NGO</option><option value="discount">Discount for customers</option></select></div>
+    <div class="field"><label class="label" for="spNgo">NGO or discount</label><select id="spNgo">${NGOS.map(n=>`<option>${n}</option>`).join('')}<option value="30">30% off</option><option value="50">50% off</option></select></div>
+    <div class="field"><label class="label" for="spTime">Pickup by</label><input type="time" id="spTime" value="21:30"></div></div>
+   <button class="btn primary" data-act="surplusAdd" style="align-self:flex-start">${ic('heart')}List surplus</button>
+   <div class="list">${S.surplus.map(s=>`<div class="row"><span class="stripe ${s.collected?'':s.mode==='donate'?'ok':'warn'}"></span><div class="grow"><div class="t small">${esc(s.item)}</div><div class="s">${s.mode==='donate'?'Donating to '+esc(s.ngo):s.discount+'% off for customers'} · pickup ${esc(s.pickup)} · listed ${rel(s.at)}</div></div>${s.collected?'<span class="pill neutral">Collected</span>':`<button class="btn sm" data-act="collected" data-id="${s.id}">Mark collected</button>`}</div>`).join('')}</div></div>
+  <div class="card"><div class="card-h"><h3>Leftover timers</h3><span class="small muted">2-hour rule</span></div><div class="list">${S.leftovers.map(leftoverRow).join('')||'<div class="empty">No food set aside.</div>'}</div>
+   <form class="grid" style="grid-template-columns:1fr auto;gap:8px" data-form="leftover"><input type="text" placeholder="Dish set aside" aria-label="Dish set aside"><button class="btn">Start</button></form></div>
+ </div>`};
+after.stock=()=>{bindLeftover();const f=document.querySelector('[data-form=probe]');f.addEventListener('submit',e=>{e.preventDefault();const s=S.sensors.find(x=>x.id===$('#probeS').value);const v=parseFloat($('#probeV').value);if(isNaN(v))return toast('Enter the temperature first');s.hist.push(v);s.hist.shift();const ok=inRange(s);S.tempLog.unshift({at:Date.now(),sensor:s.name,value:v,by:staffName(S.logAs),ok});toast(ok?'Reading logged':'Out of range. Alert raised.');render()});if(ACT._recallId)showRecall(ACT._recallId)};
+function recallImpact(item){const outs=S.outlets.filter(o=>!o.live&&o.sup.includes(item.supplier));const days=Math.max(1,-daysLeft(item.arrived||iso(-1)));return{outlets:outs,customers:35*days+outs.length*60}}
+function showRecall(id){const i=S.inventory.find(x=>x.id===id);const box=$('#recallBox');if(!i||!box)return;const imp=recallImpact(i);
+ box.innerHTML=`<div class="card" style="border-color:var(--bad)"><div class="card-h"><h3>Recall ${esc(i.name)} · <span class="mono">${esc(i.batch)}</span></h3><button class="btn sm ghost" data-act="recallCancel">Cancel</button></div>
+  <p class="small">Before you confirm, this is who will be notified:</p>
+  <div class="grid g3" style="gap:10px"><div class="stat"><b>${imp.outlets.length}</b><span>other kitchens buy from ${esc(i.supplier)}</span></div><div class="stat"><b>~${imp.customers}</b><span>customers who may have eaten it</span></div><div class="stat"><b>1</b><span>food safety officer, Pune</span></div></div>
+  ${imp.outlets.length?`<p class="small muted">${imp.outlets.map(o=>esc(o.name)).join(', ')}</p>`:''}
+  <div class="field"><label class="label" for="rReason">Reason</label><select id="rReason"><option>Sour smell or taste</option><option>Linked to customer illness</option><option>Supplier alert</option><option>Temperature abuse in storage</option><option>Packaging damaged</option></select></div>
+  <button class="btn danger" data-act="recallGo" data-id="${i.id}" style="align-self:flex-start">${ic('siren')}Issue recall and notify</button></div>`;
+ box.scrollIntoView({behavior:'smooth',block:'center'})}
+
+V.menu=()=>`<div class="pagehead"><div><span class="label">Menu & allergens</span><h1>${S.menu.length} dishes tagged</h1><p>"Contains" comes from each dish's ingredients. "May contain" marks cross-contact risk from shared pans, ladles or chutneys. Customers filter this menu by their own allergies when they scan your QR.</p></div></div>
+ <div class="card tbl-wrap"><table class="tbl"><thead><tr><th>Dish</th><th>Ingredients</th><th>Contains</th><th>May contain</th><th>₹</th></tr></thead><tbody>
+ ${S.menu.map(m=>`<tr><td style="font-weight:600">${esc(m.name)}</td><td class="small muted">${esc(m.ing)}</td><td><div class="chips">${m.alg.map(a=>`<span class="pill bad">${ALG[a]}</span>`).join('')||'<span class="pill neutral">None</span>'}</div></td><td><div class="chips">${m.may.map(a=>`<span class="pill warn">${ALG[a]}</span>`).join('')||'<span class="small muted">—</span>'}</div></td><td class="mono">${m.price}</td></tr>`).join('')}</tbody></table></div>
+ <div class="card"><h3>Add a dish</h3><p class="small muted">Type the ingredients in plain words. HygiQ AI tags allergens, including hidden ones like ghee (dairy), rava (gluten) or hing (often wheat), and flags cross-contact risks.</p>
+  <div class="grid g2"><div class="field"><label class="label" for="dName">Dish</label><input type="text" id="dName" placeholder="Misal pav"></div><div class="field"><label class="label" for="dPrice">Price (₹)</label><input type="number" id="dPrice" placeholder="70"></div></div>
+  <div class="field"><label class="label" for="dIng">Ingredients and how it's served</label><input type="text" id="dIng" placeholder="Moth beans, farsan, pav, onion, lemon; served with peanut chutney"></div>
+  <button class="btn primary" data-act="addDish" style="align-self:flex-start">${ic('spark')}Tag allergens and add</button><div id="dishOut"></div></div>`;
+
+V.team=()=>{const b=S.staff.reduce((a,s)=>a+s.badges.length,0);
+ return `<div class="pagehead"><div><span class="label">Staff training</span><h1>Team training</h1><p>Short quizzes earn badges. Every badge raises the training part of your hygiene score, and customers see how many staff are trained.</p></div><span class="pill accent">${b} of ${S.staff.length*QUIZZES.length} badges</span></div>
+ <div id="quizBox">${S.quiz?quizHTML():''}</div>
+ <div class="grid g3">${QUIZZES.map(q=>`<div class="card"><span class="medal" style="width:44px;height:44px">${ic(q.icon)}</span><h3>${q.title}</h3><p class="small muted">${q.qs.length} questions · earns <b>${q.badge}</b></p><div class="small muted">${S.staff.filter(s=>s.badges.includes(q.id)).map(s=>esc(s.name.split(' ')[0])).join(', ')||'No one yet'}</div><button class="btn primary" data-act="quizStart" data-q="${q.id}" style="align-self:flex-start">${ic('play')}Start quiz</button></div>`).join('')}</div>
+ <div class="card"><h3>Staff</h3><div class="list">${S.staff.map(s=>`<div class="row"><div class="grow"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.role)}</div></div><div class="medals">${QUIZZES.map(q=>`<span class="medal ${s.badges.includes(q.id)?'':'off'}" title="${q.badge}${s.badges.includes(q.id)?'':' (not yet)'}">${ic(q.icon)}</span>`).join('')}</div></div>`).join('')}</div></div>`};
+function quizHTML(){const Q=S.quiz,q=QUIZZES.find(x=>x.id===Q.id);
+ if(Q.step===-1)return `<div class="card" style="border-color:var(--brand)"><div class="card-h"><h3>${q.title} quiz</h3><button class="btn sm ghost" data-act="quizClose">Close</button></div><div class="field"><label class="label" for="qzStaff">Who is taking the quiz?</label>${staffSelect('qzStaff')}</div><button class="btn primary" data-act="quizBegin" style="align-self:flex-start">Begin</button></div>`;
+ if(Q.step>=q.qs.length){const pass=Q.correct===q.qs.length;return `<div class="card" style="border-color:var(--${pass?'ok':'warn'});align-items:flex-start"><span class="medal ${pass?'':'off'}" style="width:60px;height:60px">${ic(q.icon)}</span><h2>${pass?`Badge earned: ${q.badge}`:'Not quite'}</h2><p class="muted">${Q.correct} of ${q.qs.length} correct. ${pass?`${esc(staffName(Q.staff))}'s training is updated and your score went up.`:'Get every answer right to earn the badge.'}</p><div class="chips">${pass?'':`<button class="btn primary" data-act="quizBegin">Try again</button>`}<button class="btn" data-act="quizClose">Done</button></div></div>`}
+ const[qq,opts,c]=q.qs[Q.step];return `<div class="card" style="border-color:var(--brand)"><div class="card-h"><span class="label">${q.title} · question ${Q.step+1} of ${q.qs.length}</span><button class="btn sm ghost" data-act="quizClose">Close</button></div><div class="bar"><i style="width:${Q.step/q.qs.length*100}%;background:var(--brand)"></i></div><h2>${esc(qq)}</h2><div>${opts.map((o,i)=>`<button class="quiz-opt ${Q.answered!=null?(i===c?'right':i===Q.answered?'wrong':''):''}" data-act="quizAns" data-i="${i}" ${Q.answered!=null?'disabled':''}>${esc(o)}</button>`).join('')}</div>${Q.answered!=null?`<button class="btn primary" data-act="quizNext" style="align-self:flex-start">${Q.step+1<q.qs.length?'Next':'See result'}</button>`:''}</div>`}
+
+V.complaints=()=>{const c=ours();return `<div class="pagehead"><div><span class="label">Customer reports for ${esc(KITCHEN.name)}</span><h1>Complaints</h1><p>Reports from your counter QR. Serious ones also reach the food safety officer automatically.</p></div><button class="btn primary" data-act="triageAll">${ic('spark')}Summarise and suggest actions</button></div>
+ <div id="triageOut"></div>
+ <div class="card"><div class="list">${c.length?c.map(x=>`<div class="row" style="align-items:flex-start"><span class="stripe ${x.sev==='high'?'bad':x.sev==='medium'?'warn':''}"></span><div class="grow"><div class="t">${esc(x.dish)} · ${esc(x.cat)}</div><div class="small">${esc(x.text)}</div><div class="s">${x.hrs<1?'Just now':x.hrs+' h ago'}${x.ai?.summary?' · AI: '+esc(x.ai.summary):''}</div></div>${sevPill(x.sev)}${x.status!=='resolved'?`<button class="btn sm" data-act="cStatus" data-id="${x.id}" data-s="resolved">Mark resolved</button>`:'<span class="pill ok">Resolved</span>'}</div>`).join(''):'<div class="empty">No complaints yet.</div>'}</div></div>`};
+
+V.report=()=>{const sc=score();const[g,word]=grade(sc);const done=S.checklist.filter(t=>t.done);
+ return `<div class="pagehead"><div><span class="label">Audit report · ${TODAY.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span><h1>Audit report</h1><p>One summary of today's records for inspectors and owners. Download it as a file to email or print.</p></div><div class="chips"><button class="btn" data-act="reportAI">${ic('spark')}Write AI summary</button>${DL?`<button class="btn primary" data-act="reportDl">${ic('dl')}Download report</button>`:''}</div></div>
+ <div id="reportAIOut"></div>
+ <div class="grid g2 wide" style="grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)">
+  <div class="card"><div class="hero">${ring(sc,104)}<div><h2>${esc(KITCHEN.name)}</h2><p class="small muted">${esc(KITCHEN.area)}, Pune · Grade ${g}, ${word}</p><p class="small muted">Last official inspection: Pass, ${fmtDate(iso(-21))}</p></div></div>${breakdownHTML()}</div>
+  <div class="card"><h3>Checklist record</h3><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Time</th><th>Check</th><th>By</th><th>Proof</th></tr></thead><tbody>${done.sort((a,b)=>a.doneAt-b.doneAt).map(t=>`<tr><td class="mono">${hhmm(t.doneAt)}</td><td class="small">${esc(t.task)}</td><td class="small">${esc(t.by)}</td><td>${t.ai?.pass?'<span class="pill ok">Photo</span>':'<span class="pill neutral">Tick</span>'}</td></tr>`).join('')}</tbody></table></div>
+   ${S.checklist.filter(t=>!t.done&&t.hour<=H).length?`<p class="small" style="color:var(--warn)">Missed so far: ${S.checklist.filter(t=>!t.done&&t.hour<=H).map(t=>esc(t.task)).join('; ')}</p>`:''}</div>
+ </div>
+ <div class="grid g3">
+  <div class="card"><h3>Temperatures</h3><div class="list">${S.sensors.map(s=>`<div class="row"><div class="grow small">${esc(s.name)}</div><span class="mono small">${cur(s)}°C</span><span class="pill ${inRange(s)?'ok':'bad'}">${inRange(s)?'OK':'Out'}</span></div>`).join('')}</div><p class="small muted">${S.tempLog.length} probe readings logged today.</p></div>
+  <div class="card"><h3>Stock and recalls</h3><div class="list"><div class="row"><div class="grow small">Batches tracked</div><span class="mono">${S.inventory.length}</span></div><div class="row"><div class="grow small">Expired, not yet discarded</div><span class="mono">${S.inventory.filter(i=>daysLeft(i.expiry)<0).length}</span></div><div class="row"><div class="grow small">Recalls issued</div><span class="mono">${S.recalls.length}</span></div><div class="row"><div class="grow small">Surplus donated</div><span class="mono">${S.surplus.filter(s=>s.mode==='donate').length}</span></div></div></div>
+  <div class="card"><h3>People and complaints</h3><div class="list"><div class="row"><div class="grow small">Training badges</div><span class="mono">${S.staff.reduce((a,s)=>a+s.badges.length,0)} / ${S.staff.length*QUIZZES.length}</span></div><div class="row"><div class="grow small">AI photo checks</div><span class="mono">${S.aiChecks.length}</span></div><div class="row"><div class="grow small">Open complaints</div><span class="mono">${ours().filter(c=>c.status!=='resolved').length}</span></div></div></div>
+ </div>`};
+
+/* ================= CUSTOMER views ================= */
+V.explore=()=>`<div class="pagehead"><div><span class="label">Near Hinjewadi, Pune</span><h1>Explore kitchens</h1><p>Every outlet on HygiQ shows a live hygiene score. Tap one to see its record.</p></div><div class="chips"><button class="chip f" aria-pressed="${S.exploreMode==='map'}" data-act="exMode" data-m="map">${ic('map','width="14" height="14" style="vertical-align:-2px"')} Map</button><button class="chip f" aria-pressed="${S.exploreMode==='list'}" data-act="exMode" data-m="list">List</button><button class="chip" data-act="nearMe">${S.me?'Using your location':'Near me'}</button></div></div>
+ <div class="card" style="gap:10px"><div class="grid" style="grid-template-columns:minmax(0,1fr) auto;gap:8px"><input type="search" id="exQ" placeholder="Search by name or area" value="${esc(S.exploreQ)}" aria-label="Search outlets"><select id="exSort" style="width:auto" aria-label="Sort"><option value="score" ${S.exploreSort==='score'?'selected':''}>Highest score</option><option value="dist" ${S.exploreSort==='dist'?'selected':''}>Nearest</option></select></div>
+  <div class="chips"><button class="chip f" aria-pressed="${!S.exploreVeg}" data-act="exVeg" data-v="0">All</button><button class="chip f" aria-pressed="${S.exploreVeg}" data-act="exVeg" data-v="1">Pure veg only</button></div></div>
+ ${S.exploreMode==='map'?`<div class="card" style="gap:10px"><div class="mapwrap"><div id="exMap" class="mapbox" role="application" aria-label="Map of outlets by hygiene score"></div></div><div class="legend"><span><i style="background:var(--ok)"></i>Score 70+</span><span><i style="background:var(--warn)"></i>55–69</span><span><i style="background:var(--bad)"></i>Below 55</span><span><i style="background:var(--accent)"></i>Live logs</span>${S.me?'<span><i style="background:#2F6FE4"></i>You</span>':''}</div></div>`:''}
+ <div class="card"><div class="list" id="exList">${exploreList()}</div></div>`;
+function exploreList(){const q=S.exploreQ.toLowerCase();return S.outlets.filter(o=>(!S.exploreVeg||o.veg)&&(!q||(o.name+' '+o.area+' '+o.type).toLowerCase().includes(q))).sort((a,b)=>S.exploreSort==='dist'?distKm(a)-distKm(b):outletScore(b)-outletScore(a)).map(o=>{const sc=outletScore(o);const[g,,tone]=grade(sc);const open=S.complaints.filter(c=>c.place===o.name&&c.status!=='resolved').length;const insp=S.inspections.filter(i=>i.outlet===o.name&&i.status==='done').sort((a,b)=>b.date.localeCompare(a.date))[0];const exp=S.selOutlet===o.id;
+ return `<div class="row" style="cursor:pointer" data-act="exOpen" data-id="${o.id}"><span class="pill ${tone} mono" style="min-width:52px;justify-content:center">${sc} ${g}</span><div class="grow"><div class="t">${esc(o.name)}${o.live?' <span class="pill ok">Live logs</span>':''}</div><div class="s">${esc(o.type)} · ${esc(o.area)} · ${distKm(o).toFixed(1)} km · ${o.veg?'Pure veg':'Veg and non-veg'}</div>
+  ${exp&&!o.live?`<div class="small" style="margin-top:6px">${open?`<b style="color:var(--warn)">${open} open complaint${open>1?'s':''}</b> · `:'No open complaints · '}Last inspection: ${insp?`${esc(insp.result)}, ${fmtDate(insp.date)}`:'none on record'}</div>`:''}</div>${o.live?`<button class="btn sm primary" data-go="guest">View kitchen</button>`:''}</div>`}).join('')||'<div class="empty">No outlets match. Try a different search.</div>'}
+after.explore=()=>{const q=$('#exQ');q.addEventListener('input',()=>{S.exploreQ=q.value;$('#exList').innerHTML=exploreList();drawExplore()});$('#exSort').onchange=e=>{S.exploreSort=e.target.value;$('#exList').innerHTML=exploreList()};
+ if(S.exploreMode==='map'){const m=makeMap('exMap',S.me||[18.5600,73.8300],12);if(m){m._hq=L.layerGroup().addTo(m);drawExplore()}else $('#exMap').outerHTML='<div class="empty">The map could not load. Check your internet connection; the list below still works.</div>'}};
+function exploreFiltered(){const q=S.exploreQ.toLowerCase();return S.outlets.filter(o=>(!S.exploreVeg||o.veg)&&(!q||(o.name+' '+o.area+' '+o.type).toLowerCase().includes(q)))}
+function drawExplore(){const m=MAPS.exMap;if(!m)return;m._hq.clearLayers();const pts=[];
+ if(S.me){L.marker(S.me,{icon:L.divIcon({className:'mk me',html:'You',iconSize:[34,34]})}).addTo(m._hq);pts.push(S.me)}
+ exploreFiltered().forEach(o=>{const sc=outletScore(o);const tone=sc>=70?'ok':sc>=55?'warn':'bad';const open=S.complaints.filter(c=>c.place===o.name&&c.status!=='resolved').length;
+  L.marker(o.ll,{icon:L.divIcon({className:`mk ${tone}${o.live?' live':''}`,html:String(sc),iconSize:[32,32]}),title:o.name,keyboard:true}).bindPopup(`<b>${esc(o.name)}</b><p class="small muted">${esc(o.type)} · ${esc(o.area)} · ${distKm(o).toFixed(1)} km</p><p>Hygiene score <b>${sc}</b> · grade ${grade(sc)[0]}</p><p class="small">${open?`<span style="color:var(--warn)">${open} open complaint${open>1?'s':''}</span>`:'No open complaints'} · ${o.veg?'Pure veg':'Veg and non-veg'}</p>${o.live?'<button class="btn sm primary" data-go="guest" style="margin-top:6px">View kitchen live</button>':''}`).addTo(m._hq);pts.push(o.ll)});
+ if(pts.length>1)m.fitBounds(pts,{padding:[36,36],maxZoom:14,animate:false});else if(pts.length)m.setView(pts[0],14,{animate:false})}
+
+function dishClass(m){const hit=m.alg.filter(a=>S.profile.includes(a));const may=m.may.filter(a=>S.profile.includes(a));return hit.length?['bad','Contains '+hit.map(a=>ALG[a]).join(', '),'Avoid']:may.length?['warn','May contain '+may.map(a=>ALG[a]).join(', ')+' (shared kitchen)','Ask staff']:['ok',m.ing,'Safe for you']}
+V.guest=()=>{const sc=score();const[,word,tone]=grade(sc);const feed=S.checklist.filter(t=>t.done).sort((a,b)=>b.doneAt-a.doneAt).slice(0,8);const trained=S.staff.filter(s=>s.badges.length).length;const last=S.aiChecks[0];const lastClean=S.checklist.filter(t=>t.sec==='cleaning'&&t.done).sort((a,b)=>b.doneAt-a.doneAt)[0];
+ const shown=S.menu.filter(m=>!(S.hideUnsafe&&dishClass(m)[0]==='bad'));const hidden=S.menu.length-shown.length;
+ return `<div class="card" style="flex-direction:row;align-items:center;gap:16px;flex-wrap:wrap;background:var(--brand-soft);border-color:transparent"><div class="qr" aria-hidden="true">${qrCells()}</div><div style="flex:1;min-width:200px"><span class="label">You scanned the counter QR at</span><h1>${esc(KITCHEN.name)}</h1><p class="muted">${esc(KITCHEN.area)}, Pune · FSSAI licensed · last inspection Pass</p></div>${ring(sc,104)}</div>
+ ${S.sensors.some(s=>!inRange(s))?`<div class="alert warn">${ic('thermo')}<div><b>The kitchen is fixing a temperature problem</b><p class="small">${S.sensors.filter(s=>!inRange(s)).map(s=>esc(s.name)).join(', ')} is outside its safe range. Food from that unit is being moved.</p></div></div>`:''}
+ <div class="grid g4">${[['Hygiene score',`${sc}`,word],['Staff trained',`${trained}/${S.staff.length}`,'food-safety badges'],['Last cleaning',lastClean?hhmm(lastClean.doneAt):'—',lastClean?esc(lastClean.task.split(' ').slice(0,3).join(' ')):''],['AI photo check',last?(last.issues.filter(i=>!i.fixed).length?'Issues open':'Clear'):'—',last?rel(last.at):'']].map(([l,v,s])=>`<div class="card stat" style="gap:2px"><span class="label">${l}</span><b style="font-size:1.4rem">${v}</b><span>${s}</span></div>`).join('')}</div>
+ <div class="grid g2">
+  <div class="card"><div class="card-h"><h3>Kitchen live, today</h3><span class="pill ${tone}">${word}</span></div><p class="small muted">Real check-ins from the kitchen with time stamps.</p><div class="list">
+   ${S.sensors.map(s=>`<div class="row"><span class="time">now</span><div class="grow small">${esc(s.name)} at <span class="mono">${cur(s)}°C</span></div><span class="pill ${inRange(s)?'ok':'warn'}">${inRange(s)?'Safe':'Being fixed'}</span></div>`).join('')}
+   ${feed.map(t=>`<div class="row"><span class="time">${hhmm(t.doneAt)}</span>${t.photo?`<img class="thumb" src="${t.photo}" alt="">`:''}<div class="grow small">${esc(t.task)}</div>${t.ai?.pass?'<span class="pill ok">Photo</span>':'<span class="pill neutral">Logged</span>'}</div>`).join('')}
+  </div></div>
+  <div class="card" id="allergyCard"><div class="card-h"><h3>Allergy guard</h3><span class="small muted">Saved on this phone</span></div><p class="small muted">Pick your allergies. Red means it contains them, amber means a cross-contact risk in a shared kitchen.</p>
+   <div class="chips">${Object.entries(ALG).map(([k,l])=>`<button class="chip" aria-pressed="${S.profile.includes(k)}" data-act="toggleAlg" data-k="${k}">${l}</button>`).join('')}</div>
+   <label class="small" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="hideUnsafe" ${S.hideUnsafe?'checked':''}> Hide dishes I can't eat${hidden?` <span class="pill neutral">${hidden} hidden</span>`:''}</label>
+   <div class="list">${shown.map(m=>{const[t,why,lbl]=dishClass(m);return `<div class="row"><span class="stripe ${t}"></span><div class="grow"><div class="t" style="${t==='bad'?'color:var(--muted);text-decoration:line-through':''}">${esc(m.name)}</div><div class="s">${esc(why)}</div></div><span class="mono small">₹${m.price}</span><span class="pill ${t}">${lbl}</span></div>`}).join('')}</div>
+   <button class="btn sm" data-act="openChat" data-q="Based on my allergies, what is safe for me to eat here?" style="align-self:flex-start">${ic('spark')}Ask HygiQ AI what to eat</button></div>
+ </div>`};
+after.guest=()=>{$('#hideUnsafe').onchange=e=>{S.hideUnsafe=e.target.checked;store.set('hide',S.hideUnsafe);render()}};
+
+V.complain=()=>`<div class="pagehead"><div><span class="label">${esc(KITCHEN.name)}</span><h1>Report a problem</h1><p>Tell us what happened in your own words, in any language. HygiQ AI picks out the dish, symptoms and urgency and alerts the kitchen. Serious cases also reach the food safety officer.</p></div></div>
+ <div class="grid g2"><div class="card">
+  <div class="field"><label class="label" for="cText">What happened?</label><textarea id="cText" placeholder="e.g. Ate the paneer butter masala at lunch, now stomach pain and vomiting"></textarea></div>
+  ${drop('complaint','Add a photo (optional)','Foreign object, packaging, or the dish')}
+  <button class="btn primary" data-act="submitComplaint" style="align-self:flex-start">${ic('spark')}Send report</button></div>
+  <div class="card"><h3>What happens next</h3><div class="list">
+   <div class="row"><span class="pill neutral">1</span><div class="grow small">The kitchen manager sees your report immediately.</div></div>
+   <div class="row"><span class="pill neutral">2</span><div class="grow small">If others report the same dish or supplier, the food safety officer gets an outbreak alert.</div></div>
+   <div class="row"><span class="pill neutral">3</span><div class="grow small">If you have trouble breathing, swelling, or blood in vomit or stool, get medical help now. Don't wait for a reply.</div></div>
+  </div><div id="cOut"></div></div></div>`;
+
+/* ================= HOME views ================= */
+V.fridge=()=>{const items=[...S.home].sort((a,b)=>(daysLeft(a.expiry)??999)-(daysLeft(b.expiry)??999));
+ return `<div class="pagehead"><div><span class="label">Home kitchen</span><h1>My fridge</h1><p>Scan a label or add items by hand. HygiQ AI reminds you before things go off and suggests what to cook with them.</p></div><button class="btn primary" data-act="homeRecipe">${ic('spark')}Cook before it expires</button></div>
+ <div id="recipeOut"></div>
+ <div class="grid g2 wide" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)">
+  <div class="card"><div class="list">${items.map(i=>`<div class="row"><span class="stripe ${daysLeft(i.expiry)<=0?'bad':daysLeft(i.expiry)<=2?'warn':'ok'}"></span><div class="grow"><div class="t">${esc(i.name)}</div><div class="s">${esc(i.qty||'')} · ${fmtDate(i.expiry)}</div></div>${expPill(i.expiry)}<button class="btn sm ghost" data-act="homeDel" data-id="${i.id}" aria-label="Remove ${esc(i.name)}">Used</button></div>`).join('')||'<div class="empty">Your fridge list is empty.</div>'}</div>
+   <form class="grid" style="grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:8px" data-form="home"><input type="text" id="hName" placeholder="Item" aria-label="Item"><input type="date" id="hDate" aria-label="Expiry date" value="${iso(3)}"><button class="btn">${ic('plus')}Add</button></form></div>
+  <div class="card"><h3>Scan a label</h3>${drop('hlabel','Photo of the pack','Adds it with the expiry date')}<button class="btn" data-act="scanLabel" data-target="home" style="align-self:flex-start">${ic('spark')}Read label</button><div id="labelOut"></div>
+   <hr style="border:0;border-top:1px solid var(--line);width:100%"><h3>Family allergies</h3><div class="list">${S.family.map(f=>`<div class="row"><div class="grow t">${esc(f.name)}</div><div class="chips">${f.alg.map(a=>`<span class="pill accent">${ALG[a]}</span>`).join('')||'<span class="pill neutral">None</span>'}</div></div>`).join('')}</div></div>
+ </div>`};
+after.fridge=()=>{document.querySelector('[data-form=home]').addEventListener('submit',e=>{e.preventDefault();const n=$('#hName').value.trim();if(!n)return toast('Type the item name first');S.home.push({id:uid(),name:n,qty:'',expiry:$('#hDate').value||null});render()})};
+
+V.check=()=>`<div class="pagehead"><div><span class="label">Home kitchen</span><h1>Check food</h1><p>Two quick checks with your phone camera: is this still OK to eat, and is this packet safe for my family?</p></div></div>
+ <div class="grid g2">
+  <div class="card"><h3>Is it spoiled?</h3><p class="small muted">Photo of milk, bread, fruit, vegetables or cooked food. HygiQ AI looks for mould, discolouration and sliminess.</p>${drop('spoil','Photo of the food','Good light, close up')}<button class="btn primary" data-act="spoilCheck" style="align-self:flex-start">${ic('spark')}Check it</button><div id="spoilOut"></div></div>
+  <div class="card"><h3>Safe for my family?</h3><p class="small muted">Photo of a packet's ingredient list, or paste it. Checked against each person's allergies, including hidden names like casein (milk) or albumin (egg).</p>${drop('pack','Photo of ingredients','Back of the packet')}<div class="field"><label class="label" for="packText">Or paste ingredients</label><textarea id="packText" placeholder="Wheat flour, sugar, edible vegetable oil, milk solids, emulsifier (soy lecithin)…"></textarea></div><button class="btn primary" data-act="packCheck" style="align-self:flex-start">${ic('spark')}Check for allergens</button><div id="packOut"></div></div>
+ </div>`;
+
+/* ================= INSPECTOR views ================= */
+V.map=()=>{const al=alerts();const byArea={};S.complaints.forEach(c=>{(byArea[c.area]=byArea[c.area]||[]).push(c)});const maxN=Math.max(...Object.values(byArea).map(a=>a.length));
+ return `<div class="pagehead"><div><span class="label">Food safety officer · Pune</span><h1>City watch</h1><p>Complaints from every kitchen on HygiQ, grouped by place, area and supplier to catch outbreaks early.</p></div></div>
+ <div class="grid g4">${[['Open reports',S.complaints.filter(c=>c.status==='open').length],['Illness, last 48 h',S.complaints.filter(c=>c.cat==='Illness'&&c.hrs<=48).length],['Outbreak alerts',al.length],['Recalls issued',S.recalls.length]].map(([l,v])=>`<div class="card stat"><b>${v}</b><span>${l}</span></div>`).join('')}</div>
+ ${al.map(a=>`<div class="alert">${ic('warn')}<div style="flex:1;min-width:0"><b>${esc(a.title)}</b><p class="small">${esc(a.body)}</p></div>${a.outlet?`<button class="btn sm" data-act="urgentInsp" data-o="${esc(a.outlet)}">Schedule urgent inspection</button>`:`<button class="btn sm" data-act="supplierAlert" data-s="${esc(a.supplier||'')}">Alert its kitchens</button>`}</div>`).join('')}
+ ${S.recalls.map(r=>`<div class="alert warn">${ic('siren')}<div><b>Recall from ${esc(KITCHEN.name)}: ${esc(r.item)} (${esc(r.batch)})</b><p class="small">${esc(r.reason)} · ${r.outlets} kitchens notified · ${rel(r.at)}</p></div></div>`).join('')}
+ <div class="grid g2 wide" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)">
+  <div class="card">${window.L?`<div class="card-h"><h3>Outbreak map</h3><div class="chips">${[['outlets','Outlets'],['complaints','Complaints'],['links','Supplier links']].map(([k,l])=>`<button class="chip f" aria-pressed="${S.layers[k]}" data-act="layer" data-k="${k}">${l}</button>`).join('')}</div></div>
+   <div class="mapwrap"><div id="cityMap" class="mapbox" role="application" aria-label="Outbreak map of Pune"></div></div>
+   <div class="legend"><span><i style="background:var(--bad)"></i>High risk / 2+ illness reports</span><span><i style="background:var(--warn)"></i>Medium / other reports</span><span><i style="background:var(--ok)"></i>Low</span><span><i style="background:var(--ink);border-radius:2px"></i>Supplier depot</span><span>Red line: supplier linked to complaints · amber dashed: kitchens it also supplies</span></div>`:`<div class="card-h"><h3>Complaint heatmap</h3><span class="small muted">Schematic, not to scale</span></div><div class="map-wrap"><svg class="map" viewBox="0 0 640 360" role="img" aria-label="Complaints by area in Pune">
+   <path d="M20 230 C120 200 200 240 300 215 S470 170 620 225" fill="none" stroke="var(--brand-soft)" stroke-width="16" stroke-linecap="round"/><text x="560" y="250" class="sub">Mula-Mutha river</text>
+   ${Object.entries(AREAS).map(([a,[x,y]])=>{const list=byArea[a]||[];const n=list.length;const ill=list.filter(c=>c.cat==='Illness'&&c.hrs<=48).length;const tone=ill>=2?'bad':n?'warn':'ok';const r=10+(n/maxN)*26;return `<g class="area" data-act="area" data-a="${a}" tabindex="0" role="button" aria-label="${a}: ${n} reports"><circle class="halo" cx="${x}" cy="${y}" r="${r+10}" fill="var(--${tone})" opacity=".18"/><circle cx="${x}" cy="${y}" r="${r}" fill="var(--${tone})" opacity=".85"/><text x="${x}" y="${y+4}" text-anchor="middle" style="fill:#fff;font-family:var(--f-mono);font-size:12px">${n}</text><text x="${x}" y="${y+r+16}" text-anchor="middle">${a}</text></g>`}).join('')}
+  </svg></div><div class="chips small"><span class="pill bad">2+ illness reports in 48 h</span><span class="pill warn">Other reports</span><span class="pill ok">None</span></div>`}</div>
+  <div class="card"><div class="card-h"><h3 id="areaTitle">Complaint feed</h3><button class="btn sm ghost" data-act="area" data-a="">Show all</button></div><div class="list" id="areaList">${areaList('')}</div></div>
+ </div>`};
+after.map=()=>{const m=makeMap('cityMap',[18.5560,73.8400],12);if(!m)return;m._hq=L.layerGroup().addTo(m);drawCity();m.fitBounds([...S.outlets.map(o=>o.ll),...Object.values(DEPOTS)],{padding:[30,30],animate:false})};
+function drawCity(){const m=MAPS.cityMap;if(!m)return;m._hq.clearLayers();const g=m._hq;
+ const byArea={};S.complaints.forEach(c=>{(byArea[c.area]=byArea[c.area]||[]).push(c)});
+ if(S.layers.complaints)Object.entries(byArea).forEach(([a,list])=>{const ll=AREA_LL[a];if(!ll)return;const open=list.filter(c=>c.status!=='resolved');const ill=list.filter(c=>c.cat==='Illness'&&c.hrs<=48).length;const tone=ill>=2?'bad':open.length?'warn':'ok';
+  L.circle(ll,{radius:500+list.length*380,className:'z-'+tone,weight:1,fillOpacity:.22}).bindTooltip(`${a}: ${list.length} report${list.length>1?'s':''}, ${open.length} open`,{sticky:true}).on('click',()=>{$('#areaTitle').textContent=`Reports in ${a}`;$('#areaList').innerHTML=areaList(a)}).addTo(g)});
+ if(S.layers.links)alerts().filter(a=>a.supplier&&DEPOTS[a.supplier]).forEach(a=>{const d=DEPOTS[a.supplier];const hit=new Set(S.complaints.filter(c=>c.supplier===a.supplier&&c.hrs<=48).map(c=>c.place));
+  L.marker(d,{icon:L.divIcon({className:'mk depot',html:'D',iconSize:[26,26]}),title:a.supplier}).bindPopup(`<b>${esc(a.supplier)}</b><p class="small muted">Supplier depot</p><p class="small">${hit.size} kitchens with complaints · supplies ${S.outlets.filter(o=>o.sup.includes(a.supplier)).length} kitchens in total</p><button class="btn sm" data-act="supplierAlert" data-s="${esc(a.supplier)}" style="margin-top:6px">Alert its kitchens</button>`).addTo(g);
+  S.outlets.filter(o=>o.sup.includes(a.supplier)).forEach(o=>L.polyline([d,o.ll],{className:'lf-link'+(hit.has(o.name)?'':' risk'),weight:hit.has(o.name)?3:2,dashArray:hit.has(o.name)?null:'6 6',opacity:.85}).bindTooltip(hit.has(o.name)?`${o.name}: complaint linked to ${a.supplier}`:`${o.name}: also supplied, at risk`,{sticky:true}).addTo(g))});
+ if(S.layers.outlets)S.outlets.forEach(o=>{const rk=risk(o);L.marker(o.ll,{icon:L.divIcon({className:`mk ${rk.tone}${o.live?' live':''}`,html:String(rk.r),iconSize:[32,32]}),title:o.name,keyboard:true}).bindPopup(`<b>${esc(o.name)}</b><p class="small muted">${esc(o.type)} · ${esc(o.area)}</p><p>${rk.level} risk <b>${rk.r}</b> · score ${outletScore(o)}</p><p class="small">${rk.open} open complaint${rk.open===1?'':'s'}</p><div class="chips" style="margin-top:6px"><button class="btn sm" data-act="openOutlet" data-id="${o.id}">Full history</button><button class="btn sm primary" data-act="urgentInsp" data-o="${esc(o.name)}">Urgent inspection</button></div>`).addTo(g)});
+}
+let AREA='';
+function areaList(a){AREA=a;const l=S.complaints.filter(c=>!a||c.area===a).sort((x,y)=>x.hrs-y.hrs);return l.map(c=>`<div class="row" style="align-items:flex-start"><span class="stripe ${c.sev==='high'?'bad':c.sev==='medium'?'warn':''}"></span><div class="grow"><div class="t small">${esc(c.place)} · ${esc(c.dish)}</div><div class="s">${esc(c.cat)} · ${c.hrs<1?'just now':c.hrs+' h ago'}${c.supplier?' · '+esc(c.supplier):''}</div></div>${statusPill(c.status)}${c.status==='open'?`<button class="btn sm" data-act="cStatus" data-id="${c.id}" data-s="reviewed">Review</button>`:c.status==='reviewed'?`<button class="btn sm" data-act="cStatus" data-id="${c.id}" data-s="resolved">Resolve</button>`:''}</div>`).join('')||'<div class="empty">No reports here.</div>'}
+
+V.outlets=()=>{const list=S.outlets.map(o=>({o,...risk(o)})).sort((a,b)=>b.r-a.r);const sel=S.outlets.find(o=>o.id===S.selOutlet)||list[0].o;
+ return `<div class="pagehead"><div><span class="label">Risk model</span><h1>Outlets by risk</h1><p>Risk combines the hygiene score, open complaints and live problems such as warm fridges or expired stock. Inspect the top of this list first.</p></div></div>
+ <div class="grid g2 wide" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)">
+  <div class="card"><div class="list">${list.map(({o,r,level,tone,open})=>`<div class="row" style="cursor:pointer;${o.id===sel.id?'background:var(--surface-2);border-radius:10px;padding-inline:8px':''}" data-act="selOutlet" data-id="${o.id}"><span class="stripe ${tone}"></span><div class="grow"><div class="t">${esc(o.name)}</div><div class="s">${esc(o.area)} · score ${outletScore(o)} · ${open} open complaint${open===1?'':'s'}</div></div><span class="pill ${tone}">${level} ${r}</span></div>`).join('')}</div></div>
+  <div class="card">${outletDetail(sel)}</div>
+ </div>`};
+function timeline(o){const ev=[];const now=Date.now();
+ S.complaints.filter(c=>c.place===o.name).forEach(c=>ev.push({at:now-c.hrs*36e5,ico:'flag',tone:c.sev==='high'?'bad':'warn',t:`Complaint: ${c.cat}, ${c.dish}`,s:`${c.text} · ${c.status}`}));
+ S.inspections.filter(i=>i.outlet===o.name).forEach(i=>ev.push({at:new Date(i.date+'T11:00:00').getTime(),ico:'cal',tone:i.status==='scheduled'?'':i.result==='Pass'?'ok':i.result==='Fail'?'bad':'warn',t:i.status==='scheduled'?`Inspection scheduled: ${i.type}${i.urgent?' (urgent)':''}`:`Inspection: ${i.result}`,s:i.findings||i.notes||''}));
+ if(o.live){S.recalls.forEach(r=>ev.push({at:r.at,ico:'siren',tone:'bad',t:`Recall: ${r.item} (${r.batch})`,s:r.reason}));
+  S.aiChecks.forEach(a=>ev.push({at:a.at,ico:'cam',tone:a.issues.filter(i=>!i.fixed).length?'warn':'ok',t:`AI photo check: ${a.issues.length?a.issues.length+' issue(s)':'all clear'}`,s:a.issues.map(i=>i.title+(i.fixed?' (fixed)':'')).join(', ')}));
+  S.tempLog.filter(l=>l.ok===false).forEach(l=>ev.push({at:l.at,ico:'thermo',tone:'bad',t:`Temperature alert: ${l.sensor} at ${l.value}°C`,s:'Logged by '+l.by}));
+  S.sensors.filter(s=>!inRange(s)).forEach(s=>ev.push({at:now,ico:'thermo',tone:'bad',t:`Live: ${s.name} at ${cur(s)}°C`,s:'Out of safe range now'}));
+  const d=S.checklist.filter(t=>t.done).length;ev.push({at:TODAY.getTime()+H*36e5,ico:'tick',tone:'ok',t:`HACCP checklist: ${d} of ${S.checklist.length} done today`,s:''});}
+ return ev.sort((a,b)=>b.at-a.at)}
+function outletDetail(o){const{r,level,tone}=risk(o);const tl=timeline(o);return `<div class="card-h"><div><span class="label">${esc(o.type)} · ${esc(o.area)}</span><h2>${esc(o.name)}</h2></div><span class="pill ${tone}">${level} risk</span></div>
+ <div class="grid g3" style="gap:10px"><div class="stat"><b>${outletScore(o)}</b><span>hygiene score${o.live?' (live)':''}</span></div><div class="stat"><b>${r}</b><span>risk / 100</span></div><div class="stat"><b>${o.sup.length}</b><span>suppliers</span></div></div>
+ <p class="small muted">Suppliers: ${o.sup.map(esc).join(', ')}</p>
+ <div class="chips"><button class="btn sm primary" data-act="urgentInsp" data-o="${esc(o.name)}">${ic('cal')}Schedule urgent inspection</button><button class="btn sm" data-act="openChat" data-q="${esc('Should I inspect '+o.name+' first? Explain the risk.')}">${ic('spark')}Ask HygiQ AI</button></div>
+ <div class="label">Full history</div><div class="list tl">${tl.map(e=>`<div class="row"><span class="ico ${e.tone}">${ic(e.ico)}</span><div class="grow"><div class="t small">${esc(e.t)}</div>${e.s?`<div class="s">${esc(e.s)}</div>`:''}</div><span class="mono small muted">${new Date(e.at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span></div>`).join('')||'<div class="empty">No history yet.</div>'}</div>`}
+
+V.inspections=()=>{const up=S.inspections.filter(i=>i.status==='scheduled').sort((a,b)=>(b.urgent-a.urgent)||a.date.localeCompare(b.date));const done=S.inspections.filter(i=>i.status==='done').sort((a,b)=>b.date.localeCompare(a.date));
+ return `<div class="pagehead"><div><span class="label">Food safety officer · Pune</span><h1>Inspections</h1><p>Schedule visits, mark urgent ones from outbreak alerts, and record the result with findings.</p></div></div>
+ <div class="grid g2 wide" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)">
+  <div class="card"><div class="card-h"><h3>Upcoming</h3><span class="pill neutral">${up.length}</span></div><div class="list">${up.map(i=>`<div class="row" style="align-items:flex-start"><span class="stripe ${i.urgent?'bad':''}"></span><div class="grow"><div class="t">${esc(i.outlet)} ${i.urgent?'<span class="pill bad">Urgent</span>':''}</div><div class="s">${esc(i.type)} · ${fmtDate(i.date)}${i.notes?' · '+esc(i.notes):''}</div>
+   ${ACT._recordId===i.id?`<div class="grid" style="gap:8px;margin-top:8px"><select id="inRes"><option>Pass</option><option>Improvement notice</option><option>Fail</option></select><textarea id="inFind" placeholder="Findings" style="min-height:64px"></textarea><div class="chips"><button class="btn sm primary" data-act="recordSave" data-id="${i.id}">Save result</button><button class="btn sm ghost" data-act="recordOpen" data-id="">Cancel</button></div></div>`:''}</div>${ACT._recordId===i.id?'':`<button class="btn sm" data-act="recordOpen" data-id="${i.id}">Record result</button>`}</div>`).join('')||'<div class="empty">Nothing scheduled.</div>'}</div></div>
+  <div class="card"><h3>Schedule a visit</h3>
+   <div class="field"><label class="label" for="nsO">Outlet</label><select id="nsO">${S.outlets.map(o=>`<option>${esc(o.name)}</option>`).join('')}</select></div>
+   <div class="grid g2" style="gap:8px"><div class="field"><label class="label" for="nsD">Date</label><input type="date" id="nsD" value="${iso(2)}"></div><div class="field"><label class="label" for="nsT">Type</label><select id="nsT"><option>Routine inspection</option><option>Complaint follow-up</option><option>Sampling visit</option></select></div></div>
+   <label class="small" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="nsU"> Urgent</label>
+   <button class="btn primary" data-act="schedule" style="align-self:flex-start">${ic('cal')}Schedule</button></div>
+ </div>
+ <div class="card"><h3>Completed</h3><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Outlet</th><th>Type</th><th>Result</th><th>Findings</th></tr></thead><tbody>${done.map(i=>`<tr><td class="mono">${fmtDate(i.date)}</td><td style="font-weight:600">${esc(i.outlet)}</td><td class="small">${esc(i.type)}</td><td><span class="pill ${i.result==='Pass'?'ok':i.result==='Fail'?'bad':'warn'}">${esc(i.result)}</span></td><td class="small muted">${esc(i.findings)}</td></tr>`).join('')}</tbody></table></div></div>`};
+
+/* ================= actions ================= */
+const busy=(b,t)=>{b.disabled=true;b.dataset.l=b.innerHTML;b.innerHTML=t};
+const idle=b=>{if(!b)return;b.disabled=false;if(b.dataset.l)b.innerHTML=b.dataset.l};
+const SAMPLE_ISSUES=[
+ {title:'Bare hands handling ready-to-eat food',severity:'high',fix:'Wear disposable gloves and change them between raw and ready-to-eat tasks.',box:[30,34,20,30]},
+ {title:'Hair not covered',severity:'medium',fix:'Everyone in the food zone wears a hairnet or cap.',box:[31,8,15,22]},
+ {title:'Uncovered food container',severity:'high',fix:'Cover with a lid or cling film and label with prep time.',box:[60,52,22,22]},
+ {title:'Open waste bin next to prep area',severity:'medium',fix:'Use a pedal bin with a closed lid, away from prep surfaces.',box:[84,58,14,38]}];
+function sampleKitchen(){const c=document.createElement('canvas');c.width=800;c.height=520;const g=c.getContext('2d');
+ g.fillStyle='#d9d4c7';g.fillRect(0,0,800,520);for(let x=0;x<800;x+=50)for(let y=0;y<300;y+=50){g.strokeStyle='#cbc5b6';g.strokeRect(x,y,50,50)}
+ g.fillStyle='#8f9aa1';g.fillRect(0,300,800,30);g.fillStyle='#6b757c';g.fillRect(0,330,800,190);
+ g.fillStyle='#b9c2c7';g.fillRect(520,90,180,26);g.fillRect(520,150,180,26);
+ g.fillStyle='#c97b2b';g.beginPath();g.arc(560,82,16,0,7);g.fill();g.beginPath();g.arc(620,142,16,0,7);g.fill();
+ g.fillStyle='#e9e6dd';g.fillRect(250,170,140,200);g.fillStyle='#f4f1ea';g.fillRect(262,200,116,160);
+ g.fillStyle='#b98563';g.beginPath();g.arc(320,120,48,0,7);g.fill();
+ g.strokeStyle='#2a1d14';g.lineWidth=7;for(let i=0;i<9;i++){g.beginPath();g.moveTo(278+i*10,92);g.quadraticCurveTo(282+i*10,58,300+i*6,60);g.stroke()}
+ g.fillStyle='#b98563';g.fillRect(290,290,40,26);g.fillRect(340,300,40,26);
+ g.fillStyle='#f2ead8';g.beginPath();g.ellipse(350,318,70,18,0,0,7);g.fill();g.fillStyle='#e8c76a';g.beginPath();g.ellipse(350,312,52,10,0,0,7);g.fill();
+ g.fillStyle='#c0c7cb';g.fillRect(490,300,150,90);g.fillStyle='#d48a3a';g.fillRect(498,300,134,16);
+ g.fillStyle='#4b5a62';g.fillRect(680,330,100,160);g.fillStyle='#5e6c73';g.save();g.translate(680,330);g.rotate(-.5);g.fillRect(0,-12,104,14);g.restore();
+ g.fillStyle='#7a5c3a';g.beginPath();g.arc(720,325,8,0,7);g.fill();
+ return new Promise(r=>c.toBlob(b=>r({blob:b,url:URL.createObjectURL(b)}),'image/png'))}
+async function runViolation(file,url,{forceDemo=false}={}){
+ SCAN={at:Date.now(),photo:url,issues:[],scanning:true};if(S.view==='hygiene')render();
+ const fb=()=>({summary:'4 issues found at the prep counter',issues:SAMPLE_ISSUES.map(i=>({...i}))});
+ let r;try{r=forceDemo?(await new Promise(x=>setTimeout(x,2200)),{...fb(),_demo:true}):await askJSON(`You are a food-safety inspector reviewing a photo of a commercial kitchen in India. List every food-safety violation that is clearly visible: bare hands on ready-to-eat food, hair not covered, uncovered food, raw meat above cooked food, open or overflowing bins near prep, dirty surfaces or utensils, pests or droppings, food on the floor, unlabelled containers, damaged equipment. Do not guess at things you cannot see. For each give a bounding box [x, y, w, h] as percentages (0-100) of image width and height, x,y = top-left corner. Severity: high = direct contamination risk; medium = hygiene lapse; low = minor. Reply with only JSON: {"summary": "one short line", "issues": [{"title": string, "severity": "high"|"medium"|"low", "fix": "one sentence", "box": [x,y,w,h]}]}. If the photo is not of a kitchen or food area, return no issues and say so in summary.`,{images:[file],fallback:fb})}
+ catch(e){SCAN=null;toast(e.message);if(S.view==='hygiene')render();return}
+ const chk={id:uid(),at:Date.now(),photo:url,summary:r.summary||'',issues:(r.issues||[]).slice(0,8).map(i=>({title:String(i.title||'Issue'),severity:['high','medium','low'].includes(i.severity)?i.severity:'medium',fix:String(i.fix||''),box:Array.isArray(i.box)?i.box:[0,0,0,0],fixed:false})),_demo:!!r._demo};
+ S.aiChecks.unshift(chk);SCAN=null;toast(chk.issues.length?`${chk.issues.length} issue${chk.issues.length>1?'s':''} found. Score updated.`:'No violations found');if(S.view==='hygiene')render()}
+const ACT={
+ openChat:b=>{openPanel();if(b.dataset.q)send(b.dataset.q)},
+ leftoverDone:b=>{S.leftovers=S.leftovers.filter(l=>l.id!==b.dataset.id);render()},
+ discard:b=>{const i=S.inventory.find(x=>x.id===b.dataset.id);S.inventory=S.inventory.filter(x=>x.id!==b.dataset.id);toast(`${i.name} logged as discarded. Score updated.`);render()},
+ cStatus:b=>{const c=S.complaints.find(x=>x.id===b.dataset.id);c.status=b.dataset.s;toast(`Marked ${b.dataset.s}`);if(S.view==='map'){renderChrome();$('#areaList').innerHTML=areaList(AREA)}else render()},
+ homeDel:b=>{S.home=S.home.filter(i=>i.id!==b.dataset.id);render()},
+ toggleAlg:b=>{const k=b.dataset.k;S.profile=S.profile.includes(k)?S.profile.filter(x=>x!==k):[...S.profile,k];store.set('profile',S.profile);render()},
+ area:b=>{const a=b.dataset.a;$('#areaTitle').textContent=a?`Reports in ${a}`:'Complaint feed';$('#areaList').innerHTML=areaList(a)},
+ supplierAlert:b=>{b.textContent='Kitchens alerted';b.disabled=true;toast(`Every kitchen buying from ${b.dataset.s||'this supplier'} has been alerted`)},
+ tick:b=>{const t=S.checklist.find(x=>x.id===b.dataset.id);t.done=!t.done;t.doneAt=t.done?Date.now():null;t.by=t.done?staffName(S.logAs):null;if(!t.done){t.ai=null;t.photo=null}render()},
+ fault:b=>{const s=S.sensors.find(x=>x.id===b.dataset.id);const r=RANGES[s.type];const step=s.type==='hot'?-2.4:1.1;for(let i=0;i<4;i++){s.hist.push(+(cur(s)+step).toFixed(1));s.hist.shift()}S.tempLog.unshift({at:Date.now(),sensor:s.name,value:cur(s),by:'Sensor',ok:inRange(s)});toast(`${s.name} out of range. Alert sent to the manager.`);render()},
+ repair:b=>{const s=S.sensors.find(x=>x.id===b.dataset.id);const t=RANGES[s.type].target;for(let i=0;i<5;i++){s.hist.push(+(t+(Math.random()-.5)*.4).toFixed(1));s.hist.shift()}toast(`${s.name} back in range`);render()},
+ recallOpen:b=>{ACT._recallId=b.dataset.id;showRecall(b.dataset.id)},
+ recallCancel:()=>{ACT._recallId=null;$('#recallBox').innerHTML=''},
+ recallGo:b=>{const i=S.inventory.find(x=>x.id===b.dataset.id);const imp=recallImpact(i);S.recalls.unshift({batch:i.batch,item:i.name,at:Date.now(),outlets:imp.outlets.length,customers:imp.customers,reason:$('#rReason').value});S.inventory=S.inventory.filter(x=>x.id!==i.id);ACT._recallId=null;toast(`Recall issued. ${imp.outlets.length} kitchens, ~${imp.customers} customers and the food safety officer notified.`);render()},
+ surplusAdd:()=>{const mode=$('#spMode').value;const n=$('#spNgo').value;const isPct=/^\d+$/.test(n);S.surplus.unshift({id:uid(),item:$('#spItem').value,mode,ngo:mode==='donate'?(isPct?NGOS[0]:n):'',discount:mode==='discount'?(isPct?+n:30):0,pickup:$('#spTime').value||'21:30',at:Date.now(),collected:false});toast(mode==='donate'?'Listed for donation. The NGO has been notified.':'Listed at a discount on your QR page');render()},
+ collected:b=>{S.surplus.find(s=>s.id===b.dataset.id).collected=true;render()},
+ fixIssue:b=>{const chk=S.aiChecks[0];chk.issues[+b.dataset.n].fixed=true;toast('Marked fixed. Score updated.');render()},
+ async violationScan(b){const f=pending.vio;if(!f)return toast('Add a photo of your kitchen first');busy(b,'Inspecting…');await runViolation(f,URL.createObjectURL(f));delete pending.vio;idle($('#vioBtn'))},
+ async sampleScan(){const{blob,url}=await sampleKitchen();await runViolation(blob,url,{forceDemo:!SERVER&&(!SAMPLE||!CAN_IMG)})},
+ quizStart:b=>{S.quiz={id:b.dataset.q,step:-1,correct:0,answered:null,staff:S.logAs};render();$('#quizBox').scrollIntoView({behavior:'smooth',block:'start'})},
+ quizBegin:()=>{const sel=$('#qzStaff');if(sel)S.quiz.staff=sel.value;Object.assign(S.quiz,{step:0,correct:0,answered:null});$('#quizBox').innerHTML=quizHTML()},
+ quizAns:b=>{const q=QUIZZES.find(x=>x.id===S.quiz.id);const i=+b.dataset.i;S.quiz.answered=i;if(i===q.qs[S.quiz.step][2])S.quiz.correct++;$('#quizBox').innerHTML=quizHTML()},
+ quizNext:()=>{const q=QUIZZES.find(x=>x.id===S.quiz.id);S.quiz.step++;S.quiz.answered=null;if(S.quiz.step>=q.qs.length&&S.quiz.correct===q.qs.length){const s=S.staff.find(x=>x.id===S.quiz.staff);if(!s.badges.includes(q.id)){s.badges.push(q.id);toast(`${s.name} earned "${q.badge}"`)}render()}else $('#quizBox').innerHTML=quizHTML()},
+ quizClose:()=>{S.quiz=null;render()},
+ exVeg:b=>{S.exploreVeg=b.dataset.v==='1';render()},
+ exMode:b=>{S.exploreMode=b.dataset.m;render()},
+ layer:b=>{const k=b.dataset.k;S.layers[k]=!S.layers[k];b.setAttribute('aria-pressed',S.layers[k]);drawCity()},
+ openOutlet:b=>{S.selOutlet=b.dataset.id;go('outlets')},
+ nearMe:b=>{if(S.me){S.me=null;S.exploreSort='score';render();return}if(!navigator.geolocation)return toast('Location is not available in this browser. Distances are from Hinjewadi.');b.textContent='Finding you…';
+  navigator.geolocation.getCurrentPosition(p=>{S.me=[p.coords.latitude,p.coords.longitude];S.exploreSort='dist';S.exploreMode='map';toast('Sorted by distance from you');render()},()=>{b.textContent='Near me';toast('Location is blocked here. Distances are from Hinjewadi; allow location on the localhost or Vercel version.')},{timeout:8000,maximumAge:6e5})},
+ exOpen:(b,e)=>{if(e.target.closest('[data-go]'))return;const o=S.outlets.find(x=>x.id===b.dataset.id);if(o.live)return go('guest');S.selOutlet=S.selOutlet===o.id?null:o.id;$('#exList').innerHTML=exploreList()},
+ selOutlet:b=>{S.selOutlet=b.dataset.id;render()},
+ urgentInsp:b=>{const o=b.dataset.o;if(S.inspections.some(i=>i.outlet===o&&i.status==='scheduled'&&i.urgent))return toast('An urgent inspection is already scheduled');S.inspections.push({id:uid(),outlet:o,date:iso(0),type:'Complaint follow-up',status:'scheduled',urgent:true,notes:'Raised from risk alert'});toast(`Urgent inspection scheduled today at ${o}`);render()},
+ schedule:()=>{S.inspections.push({id:uid(),outlet:$('#nsO').value,date:$('#nsD').value||iso(1),type:$('#nsT').value,status:'scheduled',urgent:$('#nsU').checked,notes:''});toast('Inspection scheduled');render()},
+ recordOpen:b=>{ACT._recordId=b.dataset.id||null;render()},
+ recordSave:b=>{const i=S.inspections.find(x=>x.id===b.dataset.id);i.status='done';i.result=$('#inRes').value;i.findings=$('#inFind').value.trim()||'No findings recorded.';i.date=iso(0);ACT._recordId=null;toast('Result recorded in the outlet history');render()},
+ reset:()=>{if(DEMO.on)stopDemo();Object.assign(S,seed(),{quiz:null,selOutlet:null});SCAN=null;ACT._recallId=null;ACT._recordId=null;render();toast('Sample data reset')},
+ demo:()=>DEMO.on?stopDemo():playDemo(),
+ demoStop:()=>stopDemo(),
+ async reportAI(b){busy(b,'Writing…');const out=$('#reportAIOut');out.innerHTML='<div class="card"><p class="muted">Thinking…</p></div>';
+  try{await askText(`Write a short executive summary of today's food-safety audit for ${KITCHEN.name}, for its owner and the food safety officer. Use this data:\n${snapshot()}\n\nFormat: one line verdict with the score; "What went well" (2-3 bullets); "Needs action" (2-4 bullets, most serious first, each with a concrete fix). Under 160 words, plain and factual.`,{onText:t=>out.innerHTML=`<div class="card md">${md(t)}</div>`,fallback:()=>`**Verdict:** score ${score()}/100. Records are mostly complete, with two risks to fix today.\n\n**What went well**\n- Opening checks done and logged with names and times\n- Allergen labels on every counter dish; surplus food donated, not wasted\n\n**Needs action**\n- Dairy fridge above 5°C: repair it and move dairy to the walk-in chiller\n- Expired milk still in stock: discard it and log it\n- Supplier alert on Sai Dairy Supplies: hold paneer and curd until checked\n- Only ${S.staff.reduce((a,s)=>a+s.badges.length,0)} of 12 training badges: schedule the allergen quiz\n\n_Demo summary. Connect Claude for a live one._`})}catch(e){out.innerHTML=`<div class="card"><p>${esc(e.message)}</p></div>`}idle(b)},
+ async reportDl(b){if(!DL)return;busy(b,'Preparing…');try{await DL.save({filename:`audit-report-${KITCHEN.name.replace(/\s+/g,'-').toLowerCase()}-${ymd(TODAY)}.html`,data:reportFile()});toast('Report saved')}catch(e){if(e?.code!=='declined')toast(e?.code==='unavailable'?'Downloads are not available here':'The report could not be saved. Try again.')}idle(b)},
+ async scanLabel(b){const home=b.dataset.target==='home';const file=pending[home?'hlabel':'label'];if(!file)return toast('Add a photo of the label first');busy(b,'Reading label…');
+  try{const r=await askJSON(`You are reading a photo of a food package or ingredient label for a food-safety inventory app in India. Today's date is ${ymd(TODAY)}. Extract the details. If the label gives only a manufacture date and "best before N months", compute the expiry date. Use null for anything you cannot read; never guess a date. Allergen keys allowed: ${Object.keys(ALG).join(', ')}. Reply with only JSON: {"product": string, "quantity": string|null, "expiry": "YYYY-MM-DD"|null, "batch": string|null, "allergens": [keys], "confidence": "high"|"medium"|"low", "note": string}`,{images:[file],fallback:()=>({product:'Paneer (malai)',quantity:'1 kg',expiry:iso(2),batch:'SD-1030',allergens:['dairy'],confidence:'high',note:'Keep refrigerated below 4°C.'})});
+   const item={id:uid(),batch:r.batch||'—',name:r.product||'Unnamed item',qty:r.quantity||'',expiry:r.expiry||null,arrived:iso(0),storage:'Walk-in chiller',supplier:'Scanned at delivery',alg:(r.allergens||[]).filter(a=>ALG[a])};
+   $('#labelOut').innerHTML=`<div class="result"><div><b>${esc(item.name)}</b> ${expPill(item.expiry)} <span class="pill neutral">${esc(r.confidence||'')} confidence</span></div><div class="small">Batch <span class="mono">${esc(r.batch||'—')}</span> · Expiry <span class="mono">${esc(r.expiry||'not readable, check by hand')}</span>${item.alg.length?' · Allergens: '+item.alg.map(a=>ALG[a]).join(', '):''}</div>${r.note?`<div class="small muted">${esc(r.note)}</div>`:''}${demoNote(r)}<button class="btn sm primary" data-act="addScanned" style="justify-self:start">Add to ${home?'my fridge':'stock'}</button></div>`;
+   ACT._scanned={item,home}}catch(e){toast(e.message)}idle(b)},
+ addScanned(){const s=ACT._scanned;if(!s)return;(s.home?S.home:S.inventory).push(s.item);delete pending[s.home?'hlabel':'label'];toast(`${s.item.name} added`);ACT._scanned=null;render()},
+ async addDish(b){const name=$('#dName').value.trim(),ing=$('#dIng').value.trim(),price=+$('#dPrice').value||0;if(!name||!ing)return toast('Add the dish name and ingredients');busy(b,'Tagging…');
+  try{const r=await askJSON(`Tag food allergens for an Indian restaurant dish. Dish: "${name}". Ingredients and serving: "${ing}". Consider hidden sources common in Indian cooking (ghee, paneer, khoa = dairy; maida, rava, atta, hing = gluten; cashew, almond = tree nuts). "may_contain" is cross-contact risk from shared chutneys, oil or pans that is not a direct ingredient. Allowed keys: ${Object.keys(ALG).join(', ')}. Reply with only JSON: {"allergens":[keys],"may_contain":[keys],"reasons":[short strings like "pav: gluten"]}`,{tier:'quick',fallback:()=>{const t=ing.toLowerCase();const a=[];if(/pav|bread|maida|rava|atta|wheat|farsan/.test(t))a.push('gluten');if(/milk|ghee|paneer|curd|butter|cream|dahi/.test(t))a.push('dairy');if(/peanut|groundnut|shengdana/.test(t))a.push('peanut');if(/cashew|almond|kaju|badam/.test(t))a.push('treenut');if(/egg/.test(t))a.push('egg');if(/mustard|rai/.test(t))a.push('mustard');if(/sesame|til/.test(t))a.push('sesame');return{allergens:a,may_contain:/fried|farsan/.test(t)?['peanut']:[],reasons:['Matched by keyword']}}});
+   const alg=(r.allergens||[]).filter(a=>ALG[a]);const may=(r.may_contain||[]).filter(a=>ALG[a]&&!alg.includes(a));S.menu.unshift({name,price,veg:true,ing,alg,may});toast(`${name} added`);render();$('#dishOut').innerHTML=`<div class="result"><div><b>${esc(name)}</b> contains: ${alg.map(a=>ALG[a]).join(', ')||'no major allergens'}${may.length?' · may contain: '+may.map(a=>ALG[a]).join(', '):''}</div><div class="small muted">${(r.reasons||[]).map(esc).join(' · ')}</div>${demoNote(r)}</div>`}catch(e){toast(e.message);idle(b)}},
+ async triageAll(b){busy(b,'Summarising…');const out=$('#triageOut');out.innerHTML='<div class="card"><p class="muted">Thinking…</p></div>';
+  try{await askText(`You are the HygiQ assistant, the food-safety assistant for ${KITCHEN.name}, a canteen in Pune. Here are its customer complaints and context:\n${snapshot()}\n\nWrite a short brief for the kitchen manager: 1) a one-line overall status, 2) complaints ranked by risk with a reason, 3) up to 4 concrete actions for today. Mention if a supplier this kitchen uses appears in a city-wide alert. Plain text with short bullet lists. Under 170 words.`,{onText:t=>out.innerHTML=`<div class="card md">${md(t)}</div>`,fallback:()=>`**Status:** 1 open complaint here, low risk, but a city-wide alert involves your dairy supplier.\n\n**Ranked by risk**\n- Supplier alert, Sai Dairy Supplies: dairy-linked complaints at 3 other kitchens in 48 h. Your milk is expired and the dairy fridge is warm.\n- Hair in kanda poha: low risk, but a hygiene signal.\n\n**Do today**\n- Discard the expired milk; hold or recall today's paneer and curd batches\n- Fix the dairy fridge and move dairy to the walk-in chiller\n- Re-brief staff on hairnets before lunch and log it with a photo\n- Reply to the customer with an apology and the fix\n\n_Demo answer. Connect Claude for a live summary._`})}catch(e){out.innerHTML=`<div class="card"><p>${esc(e.message)}</p></div>`}idle(b)},
+ async submitComplaint(b){const text=$('#cText').value.trim();const file=pending.complaint;if(!text&&!file)return toast('Describe what happened first');busy(b,'Sending…');
+  try{const r=await askJSON(`Triage a food complaint from a customer at ${KITCHEN.name}, an Indian canteen. Menu: ${S.menu.map(m=>m.name).join(', ')}. Customer wrote: "${text||'(photo only)'}". ${file?'A photo is attached; describe anything relevant.':''} Severity is high for illness, allergic reaction, or a sharp or dangerous object; medium for hygiene concerns or stale food; low otherwise. Reply with only JSON: {"category":"Illness"|"Allergic reaction"|"Foreign object"|"Hygiene"|"Stale food"|"Other","severity":"high"|"medium"|"low","dish":string|null,"symptoms":[strings],"summary":"one line for the kitchen","advice_for_customer":"one or two sentences, recommend medical help if symptoms are serious"}`,{images:file?[file]:undefined,fallback:()=>{const t=text.toLowerCase();const ill=/vomit|stomach|pain|loose|diarr|nause|fever|ulti|pet/.test(t);const al=/allerg|swell|rash|itch|breath/.test(t);const dish=S.menu.find(m=>t.includes(m.name.toLowerCase().split(' ')[0]))?.name||null;return{category:al?'Allergic reaction':ill?'Illness':/hair|stone|plastic|insect|cockroach/.test(t)?'Foreign object':'Other',severity:ill||al?'high':'medium',dish,symptoms:ill?['stomach upset']:[],summary:`${ill?'Possible food illness':'Customer issue'}${dish?' after '+dish:''}.`,advice_for_customer:ill||al?'Drink fluids and see a doctor if symptoms get worse or last more than a day.':'Thank you, the kitchen has been told.'}}});
+   S.complaints.unshift({id:uid(),place:KITCHEN.name,area:'Hinjewadi',dish:r.dish||'Not stated',cat:r.category||'Other',sev:r.severity||'medium',hrs:0,text:text||'(photo report)',status:'open',supplier:'',ai:r});
+   $('#cOut').innerHTML=`<div class="result"><div><span class="pill ok">Report sent</span> ${sevPill(r.severity)} <span class="pill neutral">${esc(r.category)}</span></div><div class="small"><b>We understood:</b> ${esc(r.summary)}</div><div class="small">${esc(r.advice_for_customer)}</div>${demoNote(r)}</div>`;$('#cText').value='';delete pending.complaint;renderChrome()}catch(e){toast(e.message)}idle(b)},
+ async spoilCheck(b){const file=pending.spoil;if(!file)return toast('Add a photo of the food first');busy(b,'Looking…');
+  try{const r=await askJSON(`Look at this photo of food from a home kitchen and judge only from visible signs whether it looks spoiled (mould, discolouration, sliminess, curdling, bloated packs). Be cautious: if unsure, say check_closely. Reply with only JSON: {"food":string,"verdict":"looks_fine"|"check_closely"|"discard","signs":[short strings],"advice":"one or two sentences","confidence":"high"|"medium"|"low"}`,{images:[file],fallback:()=>({food:'Bread slices',verdict:'discard',signs:['Green-white fuzzy spots near the crust','Spots on more than one slice'],advice:'Throw away the whole pack. Mould roots spread beyond the visible spots in soft foods.',confidence:'high'})});
+   const tone={looks_fine:'ok',check_closely:'warn',discard:'bad'}[r.verdict]||'warn';const word={looks_fine:'Looks fine',check_closely:'Check closely',discard:'Discard'}[r.verdict]||'Check closely';
+   $('#spoilOut').innerHTML=`<div class="result"><div><b>${esc(r.food)}</b> <span class="pill ${tone}">${word}</span> <span class="pill neutral">${esc(r.confidence)} confidence</span></div>${r.signs?.length?`<ul class="small">${r.signs.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}<div class="small">${esc(r.advice)}</div><div class="small muted">A photo can't detect bacteria or toxins. When in doubt, smell, check the date, and throw it out.</div>${demoNote(r)}</div>`}catch(e){toast(e.message)}idle(b)},
+ async packCheck(b){const file=pending.pack;const text=$('#packText').value.trim();if(!file&&!text)return toast('Add a photo or paste the ingredients');busy(b,'Checking…');
+  try{const r=await askJSON(`Check a packaged food's ingredients for allergens for an Indian family. ${text?'Ingredients text: "'+text+'".':''} ${file?'A photo of the ingredient list is attached.':''} Family: ${JSON.stringify(S.family.map(f=>({name:f.name,allergies:f.alg.map(a=>ALG[a])})))}. Watch for hidden names (casein, whey, lactose = milk; albumin = egg; lecithin may be soy; hydrolysed wheat protein = gluten) and "may contain" warnings. Only judge from the listed ingredients; if text is unreadable say so. Reply with only JSON: {"product":string|null,"allergens_found":[{"allergen":string,"evidence":string}],"may_contain":[strings],"per_person":[{"name":string,"safe":boolean,"reason":string}]}`,{images:file?[file]:undefined,fallback:()=>{const t=(text||'milk solids, wheat flour, soy lecithin').toLowerCase();const f=[];if(/milk|whey|casein|lactose|butter|ghee/.test(t))f.push({allergen:'Milk / dairy',evidence:'milk solids'});if(/wheat|maida|gluten/.test(t))f.push({allergen:'Gluten',evidence:'wheat flour'});if(/soy|lecithin/.test(t))f.push({allergen:'Soy',evidence:'soy lecithin'});if(/peanut|groundnut/.test(t))f.push({allergen:'Peanut',evidence:'groundnut'});return{product:'Biscuits',allergens_found:f,may_contain:['Tree nuts'],per_person:S.family.map(p=>{const bad=p.alg.filter(a=>f.some(x=>x.allergen===ALG[a])||a==='treenut');return{name:p.name,safe:!bad.length,reason:bad.length?'Contains or may contain '+bad.map(a=>ALG[a]).join(', '):'No listed allergens for '+p.name}})}}});
+   $('#packOut').innerHTML=`<div class="result">${r.product?`<b>${esc(r.product)}</b>`:''}<div class="chips">${(r.allergens_found||[]).map(a=>`<span class="pill accent">${esc(a.allergen)}: ${esc(a.evidence)}</span>`).join('')||'<span class="pill neutral">No major allergens listed</span>'}${(r.may_contain||[]).map(m=>`<span class="pill warn">May contain ${esc(m)}</span>`).join('')}</div><div class="list">${(r.per_person||[]).map(p=>`<div class="row"><div class="grow"><div class="t small">${esc(p.name)}</div><div class="s">${esc(p.reason)}</div></div><span class="pill ${p.safe?'ok':'bad'}">${p.safe?'Safe':'Avoid'}</span></div>`).join('')}</div>${demoNote(r)}</div>`}catch(e){toast(e.message)}idle(b)},
+ async homeRecipe(b){busy(b,'Thinking…');const out=$('#recipeOut');out.innerHTML='<div class="card"><p class="muted">Thinking…</p></div>';
+  const soon=S.home.filter(i=>daysLeft(i.expiry)!==null&&daysLeft(i.expiry)>=0&&daysLeft(i.expiry)<=2);const gone=S.home.filter(i=>daysLeft(i.expiry)<0);
+  try{await askText(`Suggest 2 simple Indian home dishes that use up these items before they expire: ${soon.map(i=>`${i.name} (${daysLeft(i.expiry)} days left)`).join(', ')}. Family allergies: ${S.family.map(f=>f.name+': '+(f.alg.map(a=>ALG[a]).join(', ')||'none')).join('; ')}; flag who must skip a dish. Also say what to do with expired items: ${gone.map(i=>i.name).join(', ')||'none'}. Reply in ${S.lang}. Short: dish name in bold, one line method, under 130 words.`,{onText:t=>out.innerHTML=`<div class="card md">${md(t)}</div>`,fallback:()=>`**Palak paneer** with today's milk for a creamy finish. Blanch and blend the spinach, add cubed paneer, finish with a splash of milk. Aai should skip it (dairy).\n\n**Masala bread upma** from the brown bread, with onion, tomato and curry leaves. Safe for everyone.\n\n**Expired:** throw away the leftover rajma. Cooked beans kept past their date can carry bacteria you can't see or smell.\n\n_Demo answer. Connect Claude for live suggestions._`})}catch(e){out.innerHTML=`<div class="card"><p>${esc(e.message)}</p></div>`}idle(b)}
+};
+function reportFile(){const sc=score();const rows=(a)=>a.join('');return `<!doctype html><html><head><meta charset="utf-8"><title>Audit report, ${esc(KITCHEN.name)}</title><style>body{font:14px/1.5 system-ui,sans-serif;max-width:820px;margin:32px auto;padding:0 16px;color:#14201B}h1{margin:0}table{width:100%;border-collapse:collapse;margin:8px 0 20px}td,th{border-bottom:1px solid #ccd;padding:6px;text-align:left;vertical-align:top}th{font-size:12px;text-transform:uppercase;color:#556}.big{font-size:40px;font-weight:800}</style></head><body>
+<p>HygiQ · Food safety audit report</p><h1>${esc(KITCHEN.name)}, ${esc(KITCHEN.area)}, Pune</h1><p>${TODAY.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
+<p><span class="big">${sc}</span> / 100 · Grade ${grade(sc)[0]} (${grade(sc)[1]})</p>
+<h2>Score breakdown</h2><table><tr><th>Part</th><th>Points</th><th>Why</th></tr>${rows(breakdown().map(b=>`<tr><td>${b.k}</td><td>${b.v.toFixed(0)} / ${b.max}</td><td>${esc(b.why)}</td></tr>`))}</table>
+<h2>HACCP checklist</h2><table><tr><th>Section</th><th>Check</th><th>Done</th><th>By</th></tr>${rows(S.checklist.map(t=>`<tr><td>${SECTIONS[t.sec]}</td><td>${esc(t.task)}</td><td>${t.done?hhmm(t.doneAt):'Not done'}</td><td>${esc(t.by||'')}</td></tr>`))}</table>
+<h2>Temperatures</h2><table><tr><th>Unit</th><th>Now</th><th>Safe range</th></tr>${rows(S.sensors.map(s=>`<tr><td>${esc(s.name)}</td><td>${cur(s)}°C</td><td>${RANGES[s.type].min} to ${RANGES[s.type].max}°C</td></tr>`))}</table>
+<h2>Stock</h2><table><tr><th>Batch</th><th>Item</th><th>Supplier</th><th>Expiry</th></tr>${rows(S.inventory.map(i=>`<tr><td>${esc(i.batch)}</td><td>${esc(i.name)}</td><td>${esc(i.supplier)}</td><td>${i.expiry||'—'}${daysLeft(i.expiry)<0?' (EXPIRED)':''}</td></tr>`))}</table>
+<h2>Recalls</h2>${S.recalls.length?`<table><tr><th>Batch</th><th>Item</th><th>Reason</th></tr>${rows(S.recalls.map(r=>`<tr><td>${esc(r.batch)}</td><td>${esc(r.item)}</td><td>${esc(r.reason)}</td></tr>`))}</table>`:'<p>None</p>'}
+<h2>AI photo checks</h2>${rows(S.aiChecks.map(a=>`<p>${new Date(a.at).toLocaleString('en-IN')}: ${a.issues.length?a.issues.map(i=>esc(i.title)+(i.fixed?' (fixed)':'')).join('; '):'all clear'}</p>`))}
+<h2>Staff training</h2><table><tr><th>Name</th><th>Role</th><th>Badges</th></tr>${rows(S.staff.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.role)}</td><td>${s.badges.map(b=>QUIZZES.find(q=>q.id===b).badge).join(', ')||'None'}</td></tr>`))}</table>
+<h2>Complaints</h2><table><tr><th>Dish</th><th>Category</th><th>Severity</th><th>Status</th></tr>${rows(ours().map(c=>`<tr><td>${esc(c.dish)}</td><td>${esc(c.cat)}</td><td>${c.sev}</td><td>${c.status}</td></tr>`))}</table>
+</body></html>`}
+
+/* ================= demo mode: auto-plays the story ================= */
+const DEMO={on:false,cancel:null,step:-1};
+const STEPS=[
+ ['Photo AI','The kitchen photographs its prep counter. AI marks bare hands, uncovered food, hair and an open bin, each with a fix.'],
+ ['Live sensor','The walk-in chiller starts warming. The alert fires and the hygiene score drops live.'],
+ ['QR scan','A customer scans the counter QR and sees the real logs: temperatures, cleaning times, training.'],
+ ['Allergy guard','She is allergic to peanuts and dairy. One tap hides every dish she cannot eat and flags cross-contact risks.'],
+ ['Outbreak radar','The food safety officer sees complaints clustering at one restaurant and a dairy supplier linked to three kitchens.']];
+const wait=ms=>new Promise((res,rej)=>{const t=setTimeout(res,ms);DEMO.cancel=()=>{clearTimeout(t);rej(new Error('stopped'))}});
+function demoBar(){const b=$('#demoBar');if(!DEMO.on){b.hidden=true;return}b.hidden=false;
+ b.innerHTML=`<div class="demo-steps">${STEPS.map((s,i)=>`<span class="${i===DEMO.step?'on':i<DEMO.step?'done':''}">${i+1}. ${s[0]}</span>`).join('')}</div><div class="cap"><span>${esc(STEPS[DEMO.step]?.[1]||'Starting…')}</span><button class="btn sm" data-act="demoStop">Stop</button></div>`}
+function stopDemo(){DEMO.on=false;DEMO.cancel?.();DEMO.step=-1;demoBar();renderChrome()}
+const focusEl=sel=>{const el=document.querySelector(sel);el?.scrollIntoView({behavior:'smooth',block:'center'})};
+async function playDemo(){closePanel();Object.assign(S,seed(),{quiz:null,selOutlet:null,hideUnsafe:false});SCAN=null;
+ S.sensors.forEach(s=>{const t=RANGES[s.type].target;s.hist=s.hist.map(()=>+(t+(Math.random()-.5)*.5).toFixed(1))});
+ DEMO.on=true;DEMO.step=0;try{
+  setRole('kitchen','hygiene');demoBar();await wait(900);focusEl('#aiInspect');
+  const{blob,url}=await sampleKitchen();runViolation(blob,url,{forceDemo:true});await wait(6200);
+  DEMO.step=1;demoBar();go('today');await wait(1600);
+  const s=S.sensors[0];for(let i=0;i<6;i++){s.hist.push(+(cur(s)+.75).toFixed(1));s.hist.shift();render();await wait(750)}
+  S.tempLog.unshift({at:Date.now(),sensor:s.name,value:cur(s),by:'Sensor',ok:false});render();await wait(3600);
+  DEMO.step=2;demoBar();setRole('customer','guest');await wait(6500);
+  DEMO.step=3;demoBar();S.profile=['peanut','dairy'];render();focusEl('#allergyCard');await wait(2600);S.hideUnsafe=true;render();focusEl('#allergyCard');await wait(5000);
+  DEMO.step=4;demoBar();setRole('inspector','map');await wait(7500);
+  DEMO.on=false;demoBar();renderChrome();store.set('profile',S.profile);toast('Demo complete. Explore any role, or press Reset sample data.');
+ }catch(e){if(e.message!=='stopped'){console.error(e);toast('The demo stopped unexpectedly.')}DEMO.on=false;demoBar();renderChrome()}}
+
+/* ================= assistant ================= */
+const turns=[];let chatImg=null,ctl=null;
+const SUGG={kitchen:['आज पहले क्या करना है?','What should I do first today?','Explain my hygiene score','Should I recall the paneer batch?','What can we cook with stock expiring soon?'],
+ customer:['Based on my allergies, what is safe for me to eat here?','Is this kitchen safe today?','Which outlets near me score best?'],
+ home:["What's about to expire in my fridge?",'What can Riya eat from the fridge?','How long can cooked rice stay out?'],
+ inspector:['Which kitchens need inspection first?','Explain the Sai Dairy alert','Summarise the last 48 hours']};
+function renderSuggest(){$('#suggest').innerHTML=turns.length>2?'':SUGG[S.role].map(q=>`<button data-act="openChat" data-q="${esc(q)}">${esc(q)}</button>`).join('');$('#panelSub').textContent=`Helping: ${ROLES[S.role].label.toLowerCase()}`}
+function bubble(role,html){const d=document.createElement('div');d.className='msg '+role+(role==='a'?' md':'');d.innerHTML=html;$('#msgs').appendChild(d);$('#msgs').scrollTop=1e9;return d}
+function openPanel(){$('#panel').classList.add('open');$('#scrim').hidden=false;if(!$('#msgs').children.length)bubble('a',md(`Namaste! I'm the **HygiQ assistant**. I can see the checklist, stock, sensors, menu, training, complaints and city alerts. Ask me anything, or attach a photo of food, a label or your kitchen.`));setTimeout(()=>$('#chatIn').focus(),200)}
+function closePanel(){$('#panel').classList.remove('open');$('#scrim').hidden=true}
+$('#fab').onclick=openPanel;$('#closePanel').onclick=closePanel;$('#scrim').onclick=closePanel;
+$('#lang').value=S.lang;$('#lang').onchange=e=>{S.lang=e.target.value;store.set('lang',S.lang)};
+$('#chatFile').onchange=e=>{chatImg=e.target.files[0]||null;const p=$('#attachPrev');if(chatImg){p.hidden=false;p.innerHTML=`<img src="${URL.createObjectURL(chatImg)}" alt=""><span style="flex:1;min-width:0;overflow-wrap:anywhere">${esc(chatImg.name)}</span><button class="btn sm ghost" type="button" id="rmImg">Remove</button>`;$('#rmImg').onclick=()=>{chatImg=null;p.hidden=true;$('#chatFile').value=''}}};
+$('#chatIn').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#composer').requestSubmit()}});
+$('#composer').onsubmit=e=>{e.preventDefault();const v=$('#chatIn').value.trim();if(!v&&!chatImg)return;send(v||'What do you see in this photo? Is it safe?');$('#chatIn').value=''};
+function rules(){return `You are the HygiQ assistant, a friendly AI food-safety assistant inside the HygiQ app (India). The current user is: ${ROLES[S.role].label}. Reply in ${S.lang}${S.lang!=='English'?' (use Devanagari script)':''}. Keep answers short and practical: 2-6 sentences or a short bullet list, bold the key action.
+Ground every answer in this live app data (JSON). Quote real items, dates, scores and temperatures from it:
+${snapshot()}
+Safety rules: for allergen or spoilage questions, answer only from the data or what is clearly visible in a photo; if data is missing say you are not sure and tell them to check the label. Never say expired food is safe. For serious symptoms (breathing trouble, swelling, blood, high fever) tell them to seek medical help now. Use Indian food-safety norms: fridge 0-5°C, freezer at or below -15°C, hot-holding at or above 63°C, cooked food not left between 5 and 60°C for more than 2 hours, reheat to 75°C.`}
+function demoReply(q){const t=q.toLowerCase();const sc=score();const has=re=>re.test(t);
+ /* intent scoring: each intent counts keyword hits (English, Hindi, Marathi, Hinglish); the best wins, else a useful role default */
+ const INT={
+  risk:/inspect|concern|worr|risk|danger|unsafe|problem|issue|bad|worst|which (kitchen|restaurant|outlet|place)|restaurant|outlet|kaun ?sa|konta|कौन|कोणत|priorit|alert|outbreak|cluster|supplier|sai dairy|summar|48|जांच|निरीक्षण|खतरा|धोका|तपासणी|chinta|kharab kitchen/g,
+  score:/score|grade|rating|points|why.*(low|drop|down)|explain|breakdown|स्कोर|गुण/g,
+  recall:/recall|batch|withdraw|wapas/g,
+  expiry:/expir|use first|stale|still use|still ok|ok to use|can i use|chalega|paneer|milk|curd|dahi|eggs?\b|surmai|fish|coriander|tomato|bread|spinach|rajma|दूध|पनीर|old |spoil|fresh|date|kharab|खराब|एक्सपायर|तारीख|बासी|शिळ/g,
+  allergy:/allerg|safe for me|can i eat|what (can|should) i eat|lactose|vegan|nut|gluten|dairy|peanut|riya|एलर्जी|अॅलर्जी|खा सकत/g,
+  safe:/is (this|it|the) (kitchen|place|canteen|restaurant)?\s*safe|safe today|hygien|clean|trust|साफ|स्वच्छ|सुरक्षित/g,
+  near:/near|nearby|best (place|outlet|restaurant|kitchen)|where (to|should i) eat|recommend|outlets|पास|जवळ/g,
+  cook:/cook|recipe|waste|dish|banau|banaye|बना|स्वयंपाक|पदार्थ/g,
+  temp:/fridge|freezer|temp|cold|warm|bain|sensor|thand|फ्रिज|तापमान/g,
+  rice:/rice|room temp|left out|how long|kitni der|chawal|चावल|भात/g,
+  training:/train|quiz|badge|staff|team|प्रशिक्षण/g,
+  complaint:/complain|report|feedback|customer said|शिकायत|तक्रार/g,
+  surplus:/surplus|donat|ngo|discount|extra food|दान/g,
+  today:/today|first|to ?do|plan|shift|kaam|pehle|aaj|kya karna|आज|पहले|काम|सुरुवात/g};
+ let best=null,bs=0;for(const[k,re]of Object.entries(INT)){const n=(t.match(re)||[]).length;if(n>bs){bs=n;best=k}}
+ if(!best)best={inspector:'risk',kitchen:'today',customer:'safe',home:'expiry'}[S.role];
+ const ranked=()=>S.outlets.map(o=>({o,...risk(o)})).sort((a,b)=>b.r-a.r);
+ switch(best){
+ case 'risk':{const l=ranked();const top=l[0];const al=alerts();
+  return `**${top.o.name} (${top.o.area}) is the most concerning**: ${top.level.toLowerCase()} risk ${top.r}/100, hygiene score ${outletScore(top.o)}, ${top.open} open complaint${top.open===1?'':'s'}${top.hi?` (${top.hi} serious)`:''}.\n\n`+(al.length?'Active alerts:\n'+al.map(a=>`- **${a.title}**`).join('\n')+'\n\n':'')+'Inspect in this order:\n'+l.slice(0,4).map((x,i)=>`- ${i+1}. **${x.o.name}**: ${x.level} risk ${x.r}, score ${outletScore(x.o)}, ${x.open} open`).join('\n')+(S.role==='inspector'?'\n\n**Schedule an urgent inspection** from the alert or the outbreak map.':'')}
+ case 'score':return `Your score is **${sc}/100** (grade ${grade(sc)[0]}). Every point comes from a log:\n`+breakdown().map(b=>`- **${b.k}** ${b.v.toFixed(0)}/${b.max}: ${b.why}`).join('\n')+`\n\nFastest gain: **${breakdown().sort((a,b)=>(a.v/a.max)-(b.v/b.max))[0].k.toLowerCase()}**.`;
+ case 'recall':{const sd=S.inventory.filter(i=>i.supplier===KITCHEN.supplier);return `There is a city alert on **${KITCHEN.supplier}**. Your batches from them: ${sd.map(i=>`${i.name} ${i.batch}`).join(', ')||'none left'}. **Hold them and smell-check now**; if anything is sour, recall it from Stock & temps so other kitchens are warned.`}
+ case 'expiry':{const l=(S.role==='home'?S.home:S.inventory).filter(i=>daysLeft(i.expiry)!==null&&daysLeft(i.expiry)<=2).sort((a,b)=>daysLeft(a.expiry)-daysLeft(b.expiry));return l.length?'Use or check these first:\n'+l.map(i=>`- **${i.name}**: ${daysLeft(i.expiry)<0?'expired, discard it':daysLeft(i.expiry)===0?'expires today, use it now':daysLeft(i.expiry)+' day'+(daysLeft(i.expiry)>1?'s':'')+' left'}`).join('\n'):'Nothing expires in the next two days.'}
+ case 'allergy':{const fam=S.family.find(f=>t.includes(f.name.toLowerCase()));const said=Object.entries({dairy:/dairy|milk|lactose|paneer|दूध/,peanut:/peanut|groundnut|shengdana/,treenut:/tree ?nut|cashew|almond|kaju|badam/,gluten:/gluten|wheat|maida/,egg:/\begg/,fish:/\bfish/,sesame:/sesame|\btil\b/,soy:/\bsoy/,mustard:/mustard|\brai\b/,shellfish:/shellfish|prawn|shrimp|crab/}).filter(([,re])=>re.test(t)).map(([k])=>k);const p=said.length?said:fam?fam.alg:S.profile;const who=fam?fam.name:'you';
+  if(S.role==='home'&&fam){const ok=S.home.filter(i=>daysLeft(i.expiry)>=0&&!(/milk|paneer|curd|dahi/i.test(i.name)&&p.includes('dairy')));return `${who} (${p.map(a=>ALG[a]).join(', ')||'no allergies'}) can have:\n${ok.map(i=>`- ${i.name}`).join('\n')}`}
+  const ok=S.menu.filter(m=>!m.alg.some(a=>p.includes(a)));return `For ${who} (${p.map(a=>ALG[a]).join(', ')||'no allergies set'}), these don't contain your allergens:\n${ok.map(m=>`- ${m.name}${m.may.some(a=>p.includes(a))?' (may contain, ask staff)':''}`).join('\n')}\n\n**Tell the counter about your allergy** so they use a clean ladle.`}
+ case 'safe':{const bad=S.sensors.filter(s=>!inRange(s));const done=S.checklist.filter(c=>c.done).length;return `**${KITCHEN.name} scores ${sc}/100 today (grade ${grade(sc)[0]}).** ${done} hygiene checks logged with times, last inspection was a Pass.`+(bad.length?`\n\nOne thing to know: ${bad.map(s=>`${s.name} is at ${cur(s)}°C`).join(', ')}, and the kitchen is fixing it.`:'\n\nAll fridges and hot-holding units are in their safe range.')}
+ case 'near':return 'Best-rated outlets near you:\n'+S.outlets.map(o=>[o.name,outletScore(o),distKm(o).toFixed(1)]).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([n,s,d])=>`- **${n}**: ${s}/100, ${d} km`).join('\n')+'\n\nOpen **Explore** to see them on the map.';
+ case 'cook':return S.role==='home'?`Use these soon:\n${S.home.filter(i=>daysLeft(i.expiry)>=0&&daysLeft(i.expiry)<=2).map(i=>`- ${i.name}`).join('\n')}\n\nTry **palak paneer** or **masala bread upma**. Tap "Cook before it expires" for full ideas.`:`Use the soonest-expiring stock:\n- **Paneer butter masala** for lunch (paneer, 1 day left)\n- **Surmai fry** special (fish, 1 day left)\n- **Kadhi** with today's curd\n\nDiscard the expired milk, and list leftover pulao for donation tonight.`;
+ case 'temp':{const b=S.sensors.filter(s=>!inRange(s));return b.length?b.map(s=>`**${s.name} is at ${cur(s)}°C**, outside ${RANGES[s.type].min} to ${RANGES[s.type].max}°C. Move food out and call for repair.`).join('\n'):'All four units are in their safe range: '+S.sensors.map(s=>`${s.name} ${cur(s)}°C`).join(', ')+'.'}
+ case 'rice':return 'Cooked food should not stay between 5 and 60°C for more than **2 hours**. Rice is risky: Bacillus cereus spores survive cooking. **Chill it within 2 hours or discard it**, and reheat to 75°C before serving.';
+ case 'training':{const b=S.staff.reduce((a,s)=>a+s.badges.length,0);return `${b} of ${S.staff.length*QUIZZES.length} training badges earned.\n`+S.staff.map(s=>`- **${s.name}**: ${s.badges.length?s.badges.map(x=>QUIZZES.find(q=>q.id===x).badge).join(', '):'no badges yet'}`).join('\n')+'\n\nEach badge adds to the score. **Start with the allergen quiz** in Team training.'}
+ case 'complaint':{const c=(S.role==='inspector'?S.complaints:ours()).filter(x=>x.status!=='resolved').sort((a,b)=>({high:0,medium:1,low:2})[a.sev]-({high:0,medium:1,low:2})[b.sev]);return c.length?`${c.length} open complaint${c.length>1?'s':''}, most serious first:\n`+c.slice(0,5).map(x=>`- **${x.place}, ${x.dish}**: ${x.cat} (${x.sev}), ${x.hrs} h ago`).join('\n'):'No open complaints.'}
+ case 'surplus':return `Near-expiry food you can donate tonight: ${S.inventory.filter(i=>daysLeft(i.expiry)>=0&&daysLeft(i.expiry)<=1).map(i=>i.name).join(', ')||'none'}. **List it in Stock & temps → Surplus food**; ${S.surplus.filter(x=>x.mode==='donate').length} donation${S.surplus.length===1?'':'s'} so far.`;
+ default:{const od=due().filter(x=>!x.done);const bad=S.sensors.filter(s=>!inRange(s));const exp=S.inventory.filter(i=>daysLeft(i.expiry)<0);return `Score is **${sc}/100**. Do these first:\n`+[...bad.map(s=>`- Fix ${s.name} (${cur(s)}°C)`),...exp.map(i=>`- Discard expired ${i.name}`),...od.map(x=>`- ${x.task}`)].join('\n')||'Everything due is done.'}
+ }}
+async function send(q,{voice=false}={}){openPanel();stopSpeaking();const img=chatImg;bubble('u',(img?`<img src="${URL.createObjectURL(img)}" alt="">`:'')+esc(q));chatImg=null;$('#attachPrev').hidden=true;$('#chatFile').value='';
+ turns.push({role:'user',content:q+(img?' [photo attached]':'')});renderSuggest();const a=bubble('a','<span class="muted">Thinking…</span>');$('#sendBtn').disabled=true;
+ const fallback=()=>md(demoReply(q))+(img?'<p class="demo-tag">Photo noted. Live photo analysis needs Claude connected.</p>':'')+'<p class="demo-tag">Demo answer from app data. For live AI, run node server.js with an AI key or open the Claude link.</p>';
+ if(!SAMPLE&&SERVER){try{const text=await callServer({system:rules(),messages:turns.slice(-10),images:img?[img]:[]});a.innerHTML=md(text);turns.push({role:'assistant',content:text});if(voice||SPEAK)speak(text)}catch(e){a.innerHTML=`<p class="demo-tag">${esc(e.message)}</p>`;turns.pop()}$('#msgs').scrollTop=1e9;$('#sendBtn').disabled=false;return}
+ if(!SAMPLE){await new Promise(r=>setTimeout(r,600));a.innerHTML=fallback();turns.push({role:'assistant',content:demoReply(q)});$('#sendBtn').disabled=false;if(voice||SPEAK)speak(demoReply(q),'English');return}
+ ctl=new AbortController();
+ try{const{text}=await SAMPLE([{role:'user',content:rules()},...turns.slice(-10)],{cache:false,signal:ctl.signal,images:img&&CAN_IMG?[img]:undefined,onText:({text})=>{a.innerHTML=md(text);$('#msgs').scrollTop=1e9}});turns.push({role:'assistant',content:text});if(voice||SPEAK)speak(text)}
+ catch(e){const m=aiErr(e);if(m===null){a.innerHTML=fallback();turns.push({role:'assistant',content:demoReply(q)});if(voice||SPEAK)speak(demoReply(q),'English')}else{a.innerHTML=(e.text?md(e.text):'')+`<p class="demo-tag">${esc(m)}</p>`;turns.pop()}}
+ $('#sendBtn').disabled=false}
+
+/* ================= voice: speech in, speech out ================= */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const LANGCODE={English:'en-IN',Hindi:'hi-IN',Marathi:'mr-IN'};
+let SPEAK=store.get('speak',false),REC=null;
+function speakIcon(){const b=$('#speakBtn');b.innerHTML=ic(SPEAK?'speaker':'mute');b.setAttribute('aria-pressed',SPEAK)}
+const plain=t=>t.replace(/\*\*|__|_|#+\s|`/g,'').replace(/^\s*[-*•]\s+/gm,'').replace(/\n+/g,'. ');
+function speak(text,lang=S.lang){if(!('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(plain(text).slice(0,900));u.lang=LANGCODE[lang]||'en-IN';const v=speechSynthesis.getVoices().find(v=>v.lang===u.lang)||speechSynthesis.getVoices().find(v=>v.lang.startsWith(u.lang.slice(0,2)));if(v)u.voice=v;u.rate=1;speechSynthesis.speak(u)}catch{}}
+function stopSpeaking(){try{speechSynthesis?.cancel()}catch{}}
+function listen({onPartial,onFinal,btn}){
+ if(!SR){toast('Voice input needs Chrome or Edge. Type instead, or open the localhost version in Chrome.');return}
+ if(REC){REC.stop();return}
+ stopSpeaking();const r=new SR();REC=r;r.lang=LANGCODE[S.lang]||'en-IN';r.interimResults=true;r.maxAlternatives=1;let final='';
+ btn?.classList.add('rec');
+ r.onresult=e=>{let t='';for(const res of e.results){t+=res[0].transcript}final=t;onPartial?.(t)};
+ r.onerror=e=>{const m={'not-allowed':'Microphone is blocked here. In the Claude viewer, use typing; voice works in the localhost version in Chrome.','service-not-allowed':'Microphone is blocked here. Voice works in the localhost version in Chrome.','no-speech':'Didn\'t hear anything. Tap the mic and speak.','network':'Voice recognition needs an internet connection.','audio-capture':'No microphone found.'}[e.error];if(m)toast(m)};
+ r.onend=()=>{REC=null;btn?.classList.remove('rec');if(final.trim())onFinal?.(final.trim())};
+ try{r.start()}catch{REC=null;btn?.classList.remove('rec');toast('Could not start the microphone.')}}
+$('#micBtn').innerHTML=ic('mic');speakIcon();
+$('#speakBtn').onclick=()=>{SPEAK=!SPEAK;store.set('speak',SPEAK);speakIcon();if(!SPEAK)stopSpeaking();toast(SPEAK?'Replies will be read aloud':'Read-aloud off')};
+$('#micBtn').onclick=()=>{const hint=$('#voiceHint');listen({btn:$('#micBtn'),onPartial:t=>{$('#chatIn').value=t;hint.hidden=false;hint.textContent=`Listening in ${S.lang}… tap the mic again to stop`},onFinal:t=>{hint.hidden=true;$('#chatIn').value='';send(t,{voice:true})}});if(REC){const hint2=$('#voiceHint');hint2.hidden=false;hint2.textContent=`Listening in ${S.lang}…`}else $('#voiceHint').hidden=true};
+if('speechSynthesis' in window)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch{}
+function parseDelivery(t){const s=t.toLowerCase();const qm=s.match(/(\d+(?:\.\d+)?)\s*(kg|kilo|kilogram|g|gram|l|litre|liter|ltr|pcs|pieces|packet|dozen)/);
+ const units={kilo:'kg',kilogram:'kg',gram:'g',litre:'L',liter:'L',ltr:'L',l:'L',pieces:'pcs',packet:'packets'};const qty=qm?`${qm[1]} ${units[qm[2]]||qm[2]}`:'';
+ let expiry=iso(3);const dm=s.match(/(\d{1,2})\s*(?:tareekh|tarikh|tarik|tarakh|ta\.|th|st|nd|rd|date)/);if(dm){const d=+dm[1];const x=new Date(TODAY);if(d<x.getDate())x.setMonth(x.getMonth()+1);x.setDate(d);expiry=ymd(x)}
+ else{const nm=s.match(/(\d+)\s*(?:din|days|divas)/);if(nm)expiry=iso(+nm[1])}
+ const sup=S.inventory.map(i=>i.supplier).find(x=>s.includes(x.toLowerCase().split(' ')[0]))||'Logged by voice';
+ const name=(t.split(/[,.]/)[0].replace(/\d+(\.\d+)?\s*(kg|kilo\w*|g|gram|l|litre|liter|ltr|pcs|pieces|packet|dozen)?/i,'').replace(/\b(aaya|aaye|aali|aala|arrived|came|aa gaya)\b/gi,'').trim())||'New item';
+ const lower=name.toLowerCase();const alg=[];if(/paneer|milk|curd|dahi|butter|ghee|cream|dudh/.test(lower))alg.push('dairy');if(/egg|anda/.test(lower))alg.push('egg');if(/fish|surmai|pomfret|machli/.test(lower))alg.push('fish');if(/peanut|groundnut|shengdana/.test(lower))alg.push('peanut');if(/maida|atta|bread|pav|rava/.test(lower))alg.push('gluten');
+ return{items:[{name:name[0].toUpperCase()+name.slice(1),qty,expiry,storage:alg.includes('dairy')?'Dairy fridge':/dal|rice|atta|besan|flour/.test(lower)?'Dry store':'Walk-in chiller',supplier:sup,allergens:alg}]}}
+Object.assign(ACT,{
+ voiceLogMic:()=>listen({btn:$('#vlMic'),onPartial:t=>$('#vlText').value=t,onFinal:t=>{$('#vlText').value=t;ACT.voiceLogGo()}}),
+ async voiceLogGo(){const t=$('#vlText').value.trim();if(!t)return toast('Say or type what arrived first');const out=$('#vlOut');out.innerHTML='<p class="small muted">Understanding…</p>';
+  try{const r=await askJSON(`A kitchen worker in Pune logged a stock delivery by voice. It may be in English, Hindi, Marathi or a mix, transcribed by speech recognition so spelling may be rough: "${t}". Today is ${ymd(TODAY)}. Extract every item. Dates like "28 tareekh" mean the 28th of this month (next month if already past). If no expiry is said, use null. Storage is one of: Dairy fridge, Walk-in chiller, Freezer, Dry store, Veg rack. Known suppliers: ${[...new Set(S.inventory.map(i=>i.supplier))].join(', ')}. Allergen keys: ${Object.keys(ALG).join(', ')}. Reply with only JSON: {"items":[{"name":string in English,"qty":string,"expiry":"YYYY-MM-DD"|null,"storage":string,"supplier":string|null,"allergens":[keys]}],"confirm":"one short sentence confirming what was logged, in the same language the worker used"}`,{tier:'quick',fallback:()=>({...parseDelivery(t),confirm:''})});
+   const added=(r.items||[]).map(i=>({id:uid(),batch:'VL-'+String(Math.floor(Math.random()*9000)+1000),name:String(i.name||'New item'),qty:String(i.qty||''),storage:i.storage||'Walk-in chiller',supplier:i.supplier||'Logged by voice',arrived:iso(0),expiry:i.expiry||null,alg:(i.allergens||[]).filter(a=>ALG[a])}));
+   S.inventory.push(...added);const msg=r.confirm||`Added ${added.map(i=>i.name+(i.qty?' ('+i.qty+')':'')).join(', ')} to stock.`;
+   render();$('#vlOut').innerHTML=`<div class="result"><div><span class="pill ok">Added to stock</span></div><div class="small">${esc(msg)}</div><div class="list">${added.map(i=>`<div class="row"><div class="grow"><div class="t small">${esc(i.name)} · ${esc(i.qty)}</div><div class="s">${esc(i.storage)} · ${esc(i.supplier)}</div></div>${expPill(i.expiry)}</div>`).join('')}</div>${demoNote(r)}</div>`;$('#voiceLogCard').scrollIntoView({behavior:'smooth',block:'center'});
+   if(SPEAK||r.confirm)speak(msg)}catch(e){out.innerHTML='';toast(e.message)}}
+});
+
+/* ================= boot ================= */
+setInterval(()=>{document.querySelectorAll('[data-since]').forEach(el=>el.textContent=minsSince(+el.dataset.since))},30000);
+$('#logo1').innerHTML=LOGO(34);$('#logo2').innerHTML=LOGO(26);$('#logo3').innerHTML=LOGO(30);
+if(!ROLES[S.role])S.role='kitchen';
+render();renderSuggest();
+</script>
+</body>
+</html>

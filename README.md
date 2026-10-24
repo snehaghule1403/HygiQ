@@ -15,7 +15,7 @@ It runs entirely in the browser with no backend and no build step. Open `index.h
 
 ## What's new in v2
 
-v2 is a single-file app (`index.html`). The original multi-file version is kept as `classic.html`.
+The live site (`index.html`) is the original multi-file HygiQ, now with **live maps** (Leaflet + OpenStreetMap: customer Explore map with "Near me", outlet location maps, and an inspector risk map with complaint hotspots) and **voice** (voice search, read-aloud summaries, spoken temperature alerts and a hands-free delivery log in English, Hindi or Marathi). The single-file v2 app with the AI assistant is kept at `v2.html` (open `/v2`).
 
 | Area | New in v2 |
 |---|---|
@@ -133,7 +133,10 @@ index.html          HygiQ v2: the whole app (UI, data, AI, voice, maps, demo mod
 api/ai.js           live AI endpoint (Claude or Gemini); the key stays on the server
 server.js           local server with live AI: node server.js
 .env.example        copy to .env and add your key (.env is git-ignored)
-classic.html        HygiQ v1, kept for reference (uses css/ and js/)
+v2.html             HygiQ v2 single-file app with the AI assistant (open /v2)
+js/map.js           live maps (Leaflet + OpenStreetMap)
+js/voice.js         voice input and read-aloud (Web Speech API)
+css/extras.css      styles for maps and voice
 css/style.css       v1 styles
 js/*.js             v1 modules (data, app, auth, kitchen, consumer, regulator, demo)
 assets/             favicon and logo
