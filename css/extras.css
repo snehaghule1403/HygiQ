@@ -34,6 +34,23 @@
 .leaflet-popup-content .muted { color: #56695e; }
 .leaflet-container a.btn.primary { color: #fff; }
 
+/* ---------- complaint reports ---------- */
+.report-row { width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--border); color: inherit; font: inherit; cursor: pointer; padding: 12px 8px; border-radius: 10px; align-items: flex-start; }
+.report-row:hover, .report-row:focus-visible { background: var(--surface-2); }
+.report-row > .ic { color: var(--muted); align-self: center; width: 18px; height: 18px; }
+.report-row small { display: block; }
+.clamp { display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.report-text { white-space: pre-wrap; background: var(--surface-2); padding: 12px 14px; border-radius: 10px; }
+.steps { list-style: none; margin: 4px 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.steps li { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: 12px; border: 1px solid var(--border); color: var(--muted); }
+.steps li small { display: block; font-size: 12.5px; line-height: 1.35; margin-top: 2px; }
+.steps li.done { color: var(--text); border-color: color-mix(in srgb, var(--safe) 40%, transparent); background: var(--safe-soft); }
+.steps li.now { box-shadow: 0 0 0 2px var(--safe); }
+.step-dot { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--surface-2); color: var(--muted); }
+.steps li.done .step-dot { background: var(--safe); color: #fff; }
+.step-dot .ic { width: 16px; height: 16px; }
+@media (max-width: 600px) { .steps { grid-template-columns: 1fr; } }
+
 /* ---------- voice ---------- */
 .search-row { display: flex; gap: 10px; align-items: center; }
 .search-row .search { flex: 1; }

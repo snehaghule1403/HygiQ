@@ -393,6 +393,43 @@
     });
   }
 
+  /* Short reference number shown to the customer, e.g. "Ref HQ-4F2A" */
+  const reportRef = (c) => 'Ref HQ-' + String(c.id).replace(/[^a-z0-9]/gi, '').slice(-4).toUpperCase();
+
+  /* Detail view of one report: what was sent, and where it is in the process */
+  function openReport(c) {
+    const o = S().outlets.find((x) => x.id === c.outletId);
+    const stage = { open: 0, reviewed: 1, resolved: 2 }[c.status] ?? 0;
+    const steps = [
+      ['Submitted', 'Sent to the outlet and the local food safety officer.'],
+      ['Reviewed', 'A food safety officer has looked at your report.'],
+      ['Resolved', 'Action has been taken and the case is closed.'],
+    ];
+    const next = [
+      'A food safety officer will review it. Serious reports can lead to an urgent inspection.',
+      'The officer is following up with the outlet. You’ll see the status change here.',
+      'Thank you. Your report helped keep food safe for everyone.',
+    ][stage];
+    SP.modal({
+      title: `Report · ${c.category}`,
+      wide: true,
+      body: `
+        <div class="row spread"><span class="mono muted">${reportRef(c)}</span><span class="pill ${{ open: 'pill-warn', reviewed: 'pill-info', resolved: 'pill-safe' }[c.status]}">${esc(c.status)}</span></div>
+        <ol class="steps" aria-label="Report progress">${steps.map(([t, d], i) => `<li class="${i <= stage ? 'done' : ''}${i === stage ? ' now' : ''}"><span class="step-dot">${i < stage || (i === stage && stage === 2) ? icon('check') : i + 1}</span><span><strong>${t}</strong><small>${d}</small></span></li>`).join('')}</ol>
+        <div class="grid g2" style="gap:14px">
+          <div class="field"><label>Outlet</label><p><strong>${esc(o?.name || 'Unknown outlet')}</strong><br><span class="muted">${esc(o?.area || '')}</span></p></div>
+          <div class="field"><label>Sent</label><p>${SP.fmtDate(c.at)}, ${SP.fmtTime(c.at)}<br><span class="muted">${SP.relTime(c.at)}</span></p></div>
+        </div>
+        <div class="field"><label>What you reported</label><p class="report-text">${esc(c.text)}</p></div>
+        ${c.photo ? `<div class="field"><label>Your photo</label><img src="${c.photo}" alt="Photo attached to this report" style="max-height:320px;width:auto;border-radius:12px;border:1px solid var(--border)"></div>` : ''}
+        <div class="banner" style="background:var(--surface-2);color:var(--text)">${icon('bell')}<span><strong>What happens next:</strong> ${next}</span></div>`,
+      actions: [
+        ...(o ? [{ label: `${icon('eye')} View kitchen`, onClick: () => SP.go('/consumer/outlet/' + o.id) }] : []),
+        { label: 'Close', kind: 'primary' },
+      ],
+    });
+  }
+
   function viewComplaints() {
     const pre = new URLSearchParams(location.hash.split('?')[1] || '').get('outlet');
     const mine = S().complaints.filter((c) => c.userId === me().id);
@@ -413,8 +450,8 @@
       </section>
       <section class="card">
         <div class="card-head"><h2>Your reports</h2></div>
-        ${mine.length ? mine.map((c) => { const o = S().outlets.find((x) => x.id === c.outletId); return `<div class="li" style="align-items:flex-start">${c.photo ? `<img src="${c.photo}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px">` : `<span class="ki bg-warn" style="width:40px;height:40px;border-radius:10px;display:grid;place-items:center">${icon('alert')}</span>`}
-          <div class="grow"><strong>${esc(c.category)}</strong> · ${esc(o?.name || 'Unknown outlet')}<small>${esc(c.text)}</small><small>${SP.relTime(c.at)}</small></div><span class="pill ${statusPill[c.status]}">${c.status}</span></div>`; }).join('') : SP.ui.empty('alert', 'No reports yet', 'If something goes wrong after a meal, report it here. It helps protect everyone.')}
+        ${mine.length ? `<p class="muted" style="font-size:13px;margin-bottom:4px">Tap a report to see its details and progress.</p>` + mine.map((c) => { const o = S().outlets.find((x) => x.id === c.outletId); return `<button type="button" class="li report-row" data-report="${esc(c.id)}" aria-label="Open report: ${esc(c.category)} at ${esc(o?.name || 'unknown outlet')}, ${esc(c.status)}">${c.photo ? `<img src="${c.photo}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px">` : `<span class="ki bg-warn" style="width:40px;height:40px;border-radius:10px;display:grid;place-items:center">${icon('alert')}</span>`}
+          <span class="grow"><strong>${esc(c.category)}</strong> · ${esc(o?.name || 'Unknown outlet')}<small class="clamp">${esc(c.text)}</small><small>${reportRef(c)} · ${SP.relTime(c.at)}</small></span><span class="pill ${statusPill[c.status]}">${c.status}</span>${icon('arrowR')}</button>`; }).join('') : SP.ui.empty('alert', 'No reports yet', 'If something goes wrong after a meal, report it here. It helps protect everyone.')}
       </section>
     </div>`;
   }
@@ -436,13 +473,26 @@
       $('[data-field="c-text"]').classList.toggle('invalid', text.length < 15);
       if (!outletId || !cat || text.length < 15) return;
       const u = me();
-      S().complaints.unshift({ id: SP.uid('c'), outletId, category: cat, text, photo: pendingPhoto, at: new Date().toISOString(), user: u.name.split(' ')[0] + ' ' + (u.name.split(' ')[1]?.[0] || '') + '.', userId: u.id, status: 'open' });
+      const report = { id: SP.uid('c'), outletId, category: cat, text, photo: pendingPhoto, at: new Date().toISOString(), user: u.name.split(' ')[0] + ' ' + (u.name.split(' ')[1]?.[0] || '') + '.', userId: u.id, status: 'open' };
+      S().complaints.unshift(report);
       pendingPhoto = null;
       save();
       history.replaceState(null, '', '#/consumer/complaints');
       rerender();
       SP.toast('Thanks. The outlet and food safety officer have been notified.', 'safe', 'Report submitted');
+      openReport(report); // show the submitted report straight away
     });
+    // Open any report from the "Your reports" list (bound once per page, as the list redraws)
+    const view = $('#view');
+    if (!view.dataset.reportsBound) {
+      view.dataset.reportsBound = '1';
+      view.addEventListener('click', (e) => {
+        const row = e.target.closest('[data-report]');
+        if (!row) return;
+        const c = S().complaints.find((x) => x.id === row.dataset.report);
+        if (c) openReport(c);
+      });
+    }
   }
 
   /* ===================== Routes ===================== */
