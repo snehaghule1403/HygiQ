@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>HygiQ Classic — Trust on every plate</title>
+  <meta name="description" content="HygiQ is a live food-safety trust layer connecting kitchens, customers and regulators.">
+  <meta name="theme-color" content="#0e9f5a">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- QR generator (pinned). The app falls back to a plain link if this fails to load. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+</head>
+<body>
+  <a href="#view" class="sr-only">Skip to content</a>
+  <div id="app" aria-live="polite"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <noscript><p style="padding:24px">HygiQ needs JavaScript enabled to run.</p></noscript>
+
+  <!-- Order matters: data → core → role modules -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/kitchen.js"></script>
+  <script src="js/consumer.js"></script>
+  <script src="js/regulator.js"></script>
+  <script src="js/demo.js"></script>
+</body>
+</html>

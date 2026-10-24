@@ -1,150 +1,168 @@
 # HygiQ — Trust on every plate
 
-HygiQ is a **live food-safety trust layer** that connects three groups who rarely share data today:
+HygiQ is a **live food-safety trust layer** for TechForFood (problem statement: *PROTECT — Smart Food Safety for Canteens, Restaurants & Consumers*). It connects four groups who rarely share data today:
 
-- **Kitchens** (restaurants, canteens, cloud kitchens) log hygiene digitally and get a live 0–100 hygiene score.
-- **Customers** scan a QR code at the table to see the kitchen's real logs, and filter menus by their allergies.
-- **Regulators** see risk across their whole jurisdiction and get early warning when complaints cluster.
+- **Kitchens** (canteens, restaurants, cloud kitchens) log hygiene, stock and temperatures digitally and get a live, explainable 0–100 hygiene score.
+- **Customers** scan a QR code at the counter to see the kitchen's real logs, filter the menu by their allergies, and report problems.
+- **Homes** track fridge expiry dates, check whether food has spoiled, and check packets for family allergies.
+- **Regulators** see risk across the city and get early warning when complaints cluster around a restaurant, an area or a supplier.
+
+An **AI assistant (HygiQ AI)** works across all of it: it understands text, photos and voice, and answers in English, Hindi or Marathi.
 
 It runs entirely in the browser with no backend and no build step. Open `index.html`, or deploy the folder as a static site.
 
 ---
 
+## What's new in v2
+
+v2 is a single-file app (`index.html`). The original multi-file version is kept as `classic.html`.
+
+| Area | New in v2 |
+|---|---|
+| AI | Multimodal assistant grounded in the app's live data · AI photo inspection with violation boxes drawn on the photo · label reading (expiry, batch, allergens) · allergen tagging for new dishes · complaint triage · spoilage check from a photo · packet allergen check per family member · AI audit summary |
+| Voice | Speak to HygiQ AI in English, Hindi or Marathi · replies read aloud · **voice delivery log** ("Paneer 5 kilo aaya, expiry 28 tareekh") adds stock hands-free |
+| Kitchen | Photo-verified HACCP checks · leftover 2-hour timers · surplus donation · one-tap batch recall with impact preview · training quizzes and badges · downloadable audit report |
+| Outbreaks | Supplier tracing: complaints at different kitchens that share a supplier raise one alert |
+| Home | New role: fridge expiry tracker, "cook before it expires" suggestions, spoilage and packet checks |
+| Maps | Live Pune map of outlets coloured by hygiene score, with "near me" distances · inspector **outbreak map** with complaint hotspots and lines tracing complaints back to a shared supplier depot |
+| Demo | One-button demo mode plays the whole story in about 45 seconds |
+
 ## Features
 
-### Kitchen dashboard
-- **Live hygiene score** — an animated gauge that recalculates whenever a log changes. It has five parts: checklist 25, temperatures 30, stock and expiry 15, training 15, AI checks 15.
-- **Digital HACCP checklist** — opening, cooking, cleaning and closing checks. Tap to complete; each tick records the time and the person.
-- **Temperature monitoring** — a simulated live sensor feed for fridges, freezers and hot-holding, with sparklines. A reading out of range triggers a red alert and lowers the score. Manual probe readings can be logged too.
-- **Expiry & batch tracker** — first-expiring items come first, with "expiring soon" and "expired" warnings.
-- **Photo-to-Violation AI** — upload a photo; a scanning animation runs, then the issues are marked on the photo with suggested fixes.
-- **One-tap recall** — shows which outlets and customers would be notified before you confirm.
-- **Staff training** — quizzes that award badges and raise the score.
-- **Surplus food** — list in-date food that is near expiry at a discount, or donate it to an NGO.
-- **Audit report** — a printable report (save as PDF from the print dialog) and a downloadable `.html` copy.
-- **Kitchen QR** — a real, scannable QR code you can download and print.
+### Kitchen staff
+- **Live hygiene score** with five explainable parts: checklist 25, temperatures 30, stock 15, training 15, AI checks 15. Each part says exactly why it lost points.
+- **HACCP checklist**: opening, cooking, cleaning and closing checks. Each tick records the time and the person. Add a photo and the AI confirms the task was really done.
+- **AI kitchen inspection**: upload a photo; violations (bare hands, uncovered food, hair, open bins…) are boxed on the photo with a fix. "Mark fixed" raises the score.
+- **Temperature monitoring**: fridges, freezer and hot-holding with sparklines, out-of-range alerts, fault simulation and manual probe readings.
+- **Stock and batches**: soonest expiry first, label scanning, voice logging, discard and **one-tap recall** that shows which kitchens and how many customers will be notified.
+- **Surplus food**: donate to an NGO or sell at a discount, with a pickup time.
+- **Leftover timers**: the 2-hour rule for cooked food in the 5–60°C danger zone.
+- **Menu and allergens**: "contains" and "may contain" (cross-contact) for every dish.
+- **Team training**: quizzes that award badges and raise the score.
+- **Audit report**: on-screen report, AI-written summary and a downloadable file.
 
-### Customer side
-- **Explore** — outlets with live score badges. Search, filter by score and by veg / non-veg, and sort by score or distance.
-- **QR Kitchen Transparency** (`#/outlet/<id>`, no login needed) — live temperatures, today's log, last cleaning, staff training badges and recent AI checks.
-- **Allergy Guard** — save your allergies once. Every menu then marks each dish as *contains* (red), *cross-contact risk* (amber) or *safe* (green), and can hide unsafe dishes completely.
-- **Complaint reporting** — with a category and an optional photo (resized in the browser before saving).
-- **Label check** — a simulated barcode scan that shows ingredients, expiry status and personal allergen warnings.
+### Customer
+- **Explore** outlets on a map or a list with live scores: search, pure-veg filter, sort by score or distance, and **Near me** to measure distances from your location.
+- **Kitchen live** (the QR page): live temperatures, today's check-ins with times, staff training, last AI check.
+- **Allergy guard**: red = contains, amber = cross-contact risk, green = safe; one toggle hides unsafe dishes.
+- **Report a problem** in any language, with an optional photo. The AI extracts dish, symptoms and severity.
 
-### Regulator side
-- **Outbreak Early Warning** — flags ≥ 2 serious complaints at one outlet within 48 h, or ≥ 3 across one area within 72 h.
-- **Risk heatmap** — a 5×5 city grid coloured by the riskiest outlet in each block.
-- **Outlets by risk** — risk combines the hygiene score, recent complaints and current problems (sensors out of range, expired stock).
-- **Complaint feed** — move complaints from open to reviewed to resolved.
-- **Inspections** — schedule visits (including urgent ones), then record a pass, improvement notice or fail with findings.
-- **Full outlet history** — one timeline of every temperature log, alert, AI check, HACCP tick, recall, complaint and inspection.
+### Home
+- **My fridge** with expiry reminders and AI recipe suggestions that respect family allergies.
+- **Is it spoiled?** photo check and **Safe for my family?** packet check (photo or pasted ingredients).
 
-### Extras
-- **Hackathon demo mode** — one button plays the whole story by itself in about 45 seconds:
-  photo AI flags violations → a fridge goes out of range and the score drops live → a customer scans the QR → Allergy Guard hides unsafe dishes.
-- **Future scope** page (`#/future`).
-- Light and dark mode, mobile-first layout (bottom tab bar on phones, sidebar on desktop), toasts, skeleton loaders, page transitions, and empty / loading / error states.
-- Accessibility: ARIA labels, visible focus, keyboard support, large tap targets, and reduced-motion support.
+### Inspector
+- **City watch**: an **outbreak map** of Pune with layers for outlets (coloured by risk), complaint hotspots and supplier links that trace complaints to a shared depot, outbreak alerts (same outlet, same area, same supplier), complaint workflow open → reviewed → resolved, and recalls from kitchens.
+- **Outlets by risk**: risk combines score, complaints and live problems; each outlet has a full history timeline.
+- **Inspections**: schedule (including urgent), then record Pass, Improvement notice or Fail with findings.
 
-## What makes it different
-1. **One explainable score.** Every point traces back to a specific log.
-2. **Trust you can verify.** Customers see the evidence, not just a sticker on the door.
-3. **Closes the loop.** A customer complaint reaches the regulator's outbreak radar in real time.
-4. **Built for people with allergies.** Cross-contact risk is flagged, not only listed ingredients.
-5. **Cuts waste.** Safe near-expiry food goes to NGOs instead of the bin.
+## How the AI runs
 
-## Screenshots
-Add your screenshots to `assets/screenshots/` with these names and they will show here:
+HygiQ picks the best AI it can reach, in this order:
 
-| Landing | Kitchen | Customer QR view | Regulator |
+1. **Inside claude.ai** (the published artifact): Claude, on the viewer's own account.
+2. **Your own server** (`node server.js` locally, or the Vercel function on your deployment): **live AI with your key**, Claude or Gemini. The badge at the top shows "AI live · Claude" or "AI live · Gemini".
+3. **Demo mode** (no key, or the file opened directly): every feature still works with answers computed from the app's data, labelled as demo results.
+
+The key lives only on the server (`api/ai.js`), never in the browser.
+
+### Get a key (pick one)
+
+| Provider | Where | Default model | Cost |
 |---|---|---|---|
-| ![Landing](assets/screenshots/landing.png) | ![Kitchen](assets/screenshots/kitchen.png) | ![QR view](assets/screenshots/outlet.png) | ![Regulator](assets/screenshots/regulator.png) |
+| Gemini | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | `gemini-3.6-flash` | Free tier with rate limits; free-tier prompts may be used by Google to improve products, so use sample data only |
+| Claude | [console.anthropic.com](https://console.anthropic.com) | `claude-haiku-5-5` | Pay as you go, very low cost per request |
 
-## Demo login credentials
-Every login screen also has a **Try demo account** button.
+Both read photos, so the photo inspection, label reading and spoilage checks work with either. Set `AI_MODEL` to use a different model.
 
-| Role | Email | Password |
-|---|---|---|
-| Kitchen | `kitchen@hygiq.demo` | `Demo@123` |
-| Customer | `customer@hygiq.demo` | `Demo@123` |
-| Regulator | `inspector@hygiq.demo` | `Demo@123` |
+### Live AI on your computer
 
-> Accounts and passwords exist only in your browser's local storage. There is no server, so this is for demos only.
-
-## Tech stack
-- Plain **HTML, CSS and JavaScript** (ES2020): no framework and no build step
-- **Hash-based router**, so it works from `file://` and from any static host
-- **localStorage** with a `try/catch` guard and an in-memory fallback
-- **qrcodejs 1.0.0** from cdnjs for QR codes (falls back to a plain link when offline)
-- **Google Fonts**: Plus Jakarta Sans and JetBrains Mono, with system font fallbacks
-- Inline SVG icons and illustrations
-
-## Project structure
+```bash
+cp .env.example .env        # Windows: copy .env.example .env
+# open .env and paste ONE key, e.g. GEMINI_API_KEY=your-key
+node server.js              # Node 18 or newer, nothing to install
 ```
-index.html          page shell and script order
-css/style.css       design system, light and dark themes, all components
-js/data.js          seeded demo data and the hygiene-score logic
-js/app.js           storage, session, router, toasts, modals, theme, dashboard shell
-js/auth.js          landing page, role selection, login and signup
-js/kitchen.js       kitchen dashboard, sensor simulator, vision AI provider
-js/consumer.js      explore, QR transparency, Allergy Guard, complaints, label check
-js/regulator.js     risk model, outbreak detection, heatmap, inspections, history
-js/demo.js          hackathon demo mode and the future scope page
-assets/             favicon and logo
-vercel.json         clean URLs and fallback to index.html
-```
+
+Open **http://localhost:3000**. The terminal prints "Live AI: Gemini" (or Claude) when the key is found.
+
+### Live AI on Vercel
+
+1. In your Vercel project, open **Settings → Environment Variables**.
+2. Add `GEMINI_API_KEY` (or `ANTHROPIC_API_KEY`) with your key, for Production.
+3. Redeploy (**Deployments → ⋯ → Redeploy**).
+
+`api/ai.js` becomes the `/api/ai` endpoint automatically. It limits each visitor to 40 AI requests per 10 minutes, but anyone with your site's link can use your key, so set a spending limit with your provider and remove the key after judging.
+
+## Voice
+
+- Uses the browser's built-in Web Speech API: speech recognition for the mic, speech synthesis for read-aloud. No extra libraries.
+- Works best in **Chrome or Edge** on `http://localhost` or an `https://` site. Allow microphone access when asked.
+- Languages: English (`en-IN`), Hindi (`hi-IN`), Marathi (`mr-IN`), chosen in the assistant panel.
+- The microphone is blocked inside the claude.ai viewer; typing and read-aloud still work there.
+
+## Maps
+
+- Built with **Leaflet 1.9.4** (loaded from cdnjs) and **CARTO / OpenStreetMap** tiles, light or dark to match the theme. No API key needed.
+- Coordinates of outlets and supplier depots are sample data for Pune.
+- **Near me** uses the browser's location (allow it when asked). Without it, distances are measured from Hinjewadi.
+- Inside the claude.ai viewer, street tiles are blocked, so the map shows markers, areas and the river on a plain background.
 
 ## Run locally
-The simplest option: **double-click `index.html`.** Everything works offline except Google Fonts and the QR code library.
 
-For QR codes that point at a real address, serve the folder instead:
+**With live AI:** `node server.js` after adding a key to `.env` (see above), then open http://localhost:3000.
+
+**Without AI (demo mode):** double-click `index.html`, or serve the folder:
+
 ```bash
-npx serve .
-```
-Then open the address it prints (usually http://localhost:3000).
-
-To reset all demo data, clear the site's local storage in your browser's dev tools (the `hygiq:*` keys).
-
-## Deploy
-
-### 1. Push to GitHub
-```bash
-git init
-git add .
-git commit -m "HygiQ hackathon build"
-git branch -M main
-git remote add origin https://github.com/<your-username>/hygiq.git
-git push -u origin main
+python -m http.server 8000      # then open http://localhost:8000
 ```
 
-### 2. Deploy on Vercel
-1. Go to [vercel.com/new](https://vercel.com/new) and import the GitHub repository.
-2. Framework preset: **Other**. Leave the build command empty. Output directory: `.` (the project root).
-3. Click **Deploy**. `vercel.json` already sets clean URLs and sends unknown paths to `index.html`.
+Use "Reset sample data" in the sidebar to start the demo fresh.
 
-Or use the command line:
-```bash
-npx vercel --prod
+## Demo script (about 2 minutes)
+
+1. Press **Play demo** and narrate the five steps: photo AI → fridge fails and the score drops → customer scans the QR → allergy guard → outbreak radar.
+2. Open **Stock & temps**, tap the mic and say *"Paneer 5 kilo aaya, expiry 28 tareekh, Sai Dairy"*.
+3. Open the assistant, switch to हिंदी and ask *"आज पहले क्या करना है?"*.
+4. As the inspector, open the Sai Dairy alert and schedule an urgent inspection.
+
+## Project structure
+
+```
+index.html          HygiQ v2: the whole app (UI, data, AI, voice, maps, demo mode)
+api/ai.js           live AI endpoint (Claude or Gemini); the key stays on the server
+server.js           local server with live AI: node server.js
+.env.example        copy to .env and add your key (.env is git-ignored)
+classic.html        HygiQ v1, kept for reference (uses css/ and js/)
+css/style.css       v1 styles
+js/*.js             v1 modules (data, app, auth, kitchen, consumer, regulator, demo)
+assets/             favicon and logo
+vercel.json         clean URLs; everything except /api falls back to index.html
 ```
 
-After deploying, every outlet's QR code points at your live URL, so it can be scanned from any phone.
+## Tech stack
+- Plain **HTML, CSS and JavaScript**: no framework and no build step
+- **Web Speech API** for voice in and out
+- **Leaflet** with CARTO / OpenStreetMap tiles for maps
+- **Google Fonts**: Bricolage Grotesque, Figtree and JetBrains Mono, with system fallbacks
+- Inline SVG icons; light and dark mode; works at phone width
 
-## Plugging in a real vision API
-Photo checks go through one provider object in `js/kitchen.js`:
-```js
-SP.Vision.provider = 'remote';   // default is 'simulated'
-```
-In `remote` mode it sends the image to `POST /api/vision` and expects
-`{ issues: [{ code, title, severity, fix, box: [x, y, w, h] }] }` back.
-Put the API key in a serverless function (for example a Vercel function in `/api`), **never in the browser**. This build uses no API keys, so there is no `.env.example`.
+## Deploy on Vercel
+1. Push this folder to GitHub.
+2. Go to [vercel.com/new](https://vercel.com/new) and import the repository.
+3. Framework preset: **Other**. Leave the build command empty. Output directory: `.`
+4. Add your AI key under **Environment Variables** (`GEMINI_API_KEY` or `ANTHROPIC_API_KEY`).
+5. Click **Deploy**.
+
+Or from the command line: `npx vercel --prod`
 
 ## Future scope
-- **Real IoT sensors**: LoRaWAN or BLE temperature probes streaming over MQTT
-- **Blockchain traceability**: append-only, signed batch records from farm to plate
+- **Real IoT sensors**: LoRaWAN or BLE probes streaming over MQTT
+- **Production AI backend** with audit logs, and **CCTV spot-checks**
 - **Predictive risk models**: forecast which kitchens are likely to fail inspection next
-- **Multilingual support**: regional languages and voice-guided checklists for kitchen staff
-- **Production vision AI** and **CCTV spot-checks**
+- **More languages**: Kannada, Tamil, Bengali, with voice-guided checklists
 - **Regulator integrations**: FSSAI FoSCoS sync, plus WhatsApp and SMS outbreak alerts
+- **Traceability**: signed batch records from farm to plate
 
 ---
-*HygiQ — Trust on every plate.* Built for a hackathon; all data is simulated.
+*HygiQ — Trust on every plate.* Built for TechForFood; all data is simulated.
