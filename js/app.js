@@ -319,6 +319,34 @@ document.addEventListener('click', (e) => {
 });
 
 window.addEventListener('hashchange', SP.render);
+
+/* ---------------------------------------------------------
+   Keep open tabs in sync. When another tab saves (e.g. a customer
+   files a complaint while the regulator dashboard is open), pull in
+   the shared data so this tab shows it and never overwrites it.
+   A kitchen tab keeps its own kitchen's live data, since it is the
+   source of those sensor readings.
+   --------------------------------------------------------- */
+window.addEventListener('storage', (e) => {
+  if (e.key !== 'hygiq:v1' || !e.newValue) return;
+  let incoming;
+  try { incoming = JSON.parse(e.newValue); } catch (err) { return; }
+  const st = SP.Store.state;
+  if (!incoming || incoming.version !== st.version) return;
+
+  const before = JSON.stringify([st.complaints, st.inspections]);
+  const oldCount = st.complaints.length;
+  const own = SP.Session.user && SP.Session.user.role === 'kitchen' ? SP.Session.user.outletId : null;
+  ['complaints', 'inspections', 'users', 'outlets'].forEach((k) => { if (incoming[k]) st[k] = incoming[k]; });
+  Object.keys(incoming.kitchens || {}).forEach((id) => { if (id !== own) st.kitchens[id] = incoming.kitchens[id]; });
+
+  if (JSON.stringify([st.complaints, st.inspections]) === before) return; // nothing this page shows has changed
+  const role = SP.Session.user && SP.Session.user.role;
+  if (role === 'regulator' && st.complaints.length > oldCount) SP.toast('A new customer report has arrived.', 'info', 'New report');
+  // Redraw the page, unless the person is typing or has a dialog open
+  const typing = document.activeElement && document.activeElement.matches('input, textarea, select');
+  if (!typing && !document.querySelector('.modal-backdrop')) SP.render();
+});
 window.addEventListener('DOMContentLoaded', () => {
   SP.Theme.init();
   if (!SP.Store.persistent) setTimeout(() => SP.toast('Browser storage is blocked — data will reset when you close the tab.', 'warn'), 600);
