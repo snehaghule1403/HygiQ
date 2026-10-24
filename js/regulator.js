@@ -86,13 +86,54 @@
 
   function complaintRow(c, withActions = true) {
     const o = outletById(c.outletId);
-    return `<div class="li" style="align-items:flex-start">
+    return `<div class="li c-row" style="align-items:flex-start" data-copen="${esc(c.id)}" tabindex="0" role="button" aria-label="Open complaint: ${esc(c.category)} at ${esc(o?.name || 'unknown outlet')}">
       ${c.photo ? `<img src="${c.photo}" alt="Complaint photo" style="width:52px;height:52px;object-fit:cover;border-radius:10px">` : `<span class="ki bg-${SERIOUS.includes(c.category) ? 'danger' : 'warn'}" style="width:40px;height:40px;border-radius:10px;display:grid;place-items:center;flex:none">${icon('alert')}</span>`}
       <div class="grow"><strong>${esc(c.category)}</strong> · <a href="#/regulator/outlet/${c.outletId}">${esc(o?.name || 'Unknown')}</a> <span class="muted">· ${esc(o?.area || '')}</span>
-        <small>"${esc(c.text)}"</small><small>${esc(c.user)} · ${SP.relTime(c.at)}</small></div>
+        <small class="clamp">"${esc(c.text)}"</small><small>${esc(c.user)} · ${SP.relTime(c.at)}</small></div>
       <div class="stack" style="gap:6px;justify-items:end"><span class="pill ${statusPill[c.status]}">${c.status}</span>
+        <button class="btn ghost sm" data-copen="${esc(c.id)}">${icon('eye')} View</button>
         ${withActions && c.status !== 'resolved' ? `<button class="btn ghost sm" data-cstatus="${c.id}" data-to="${c.status === 'open' ? 'reviewed' : 'resolved'}">${c.status === 'open' ? 'Mark reviewed' : 'Resolve'}</button>` : ''}</div>
     </div>`;
+  }
+
+  /* Same reference number the customer sees */
+  const reportRef = (c) => 'Ref HQ-' + String(c.id).replace(/[^a-z0-9]/gi, '').slice(-4).toUpperCase();
+
+  /* Full detail of one complaint, with the actions an officer needs */
+  function complaintModal(id, after) {
+    const c = S().complaints.find((x) => x.id === id);
+    if (!c) return SP.toast('That complaint no longer exists.', 'warn');
+    const o = outletById(c.outletId);
+    const r = o ? SP.riskOf(o) : null;
+    const others = S().complaints.filter((x) => x.outletId === c.outletId && x.id !== c.id && x.status !== 'resolved');
+    const inCluster = SP.outbreaks().some((ob) => ob.items.some((x) => x.id === c.id));
+    const actions = [];
+    if (c.status !== 'resolved') {
+      actions.push({ label: c.status === 'open' ? `${icon('check')} Mark reviewed` : `${icon('check')} Resolve`, kind: 'primary', onClick: () => {
+        c.status = c.status === 'open' ? 'reviewed' : 'resolved';
+        save(); after && after(); SP.toast(`Complaint marked ${c.status}.`, 'info');
+      } });
+    }
+    if (o) {
+      actions.push({ label: `${icon('list')} Schedule inspection`, onClick: () => { setTimeout(() => scheduleModal(o.id, SERIOUS.includes(c.category), after), 50); } });
+      actions.push({ label: 'Outlet history', onClick: () => SP.go('/regulator/outlet/' + o.id) });
+    }
+    actions.push({ label: 'Close' });
+    SP.modal({
+      title: `Complaint · ${c.category}`,
+      wide: true,
+      body: `
+        <div class="row spread"><span class="mono muted">${reportRef(c)}</span><span class="pill ${statusPill[c.status]}">${esc(c.status)}</span></div>
+        ${inCluster ? `<div class="banner danger">${icon('siren')}<span>Part of an outbreak cluster. Consider an urgent inspection.</span></div>` : ''}
+        <div class="grid g2" style="gap:14px">
+          <div class="field"><label>Outlet</label><p><strong>${esc(o?.name || 'Unknown outlet')}</strong><br><span class="muted">${esc(o?.area || '')}${r ? ` · ${riskLabel(r.risk)} · risk ${r.risk} · score ${r.score}` : ''}</span></p></div>
+          <div class="field"><label>Reported by</label><p><strong>${esc(c.user)}</strong><br><span class="muted">${SP.fmtDate(c.at)}, ${SP.fmtTime(c.at)} · ${SP.relTime(c.at)}</span></p></div>
+        </div>
+        <div class="field"><label>What the customer reported</label><p class="report-text">${esc(c.text)}</p></div>
+        ${c.photo ? `<div class="field"><label>Customer’s photo</label><img src="${c.photo}" alt="Photo attached to this complaint" style="max-height:320px;width:auto;border-radius:12px;border:1px solid var(--border)"></div>` : '<p class="muted" style="font-size:13px">No photo attached.</p>'}
+        <p class="muted" style="font-size:13px">${others.length ? `${others.length} other open complaint${others.length > 1 ? 's' : ''} at this outlet.` : 'No other open complaints at this outlet.'}</p>`,
+      actions,
+    });
   }
 
   /* ===================== Overview ===================== */
@@ -282,6 +323,13 @@
       if (cf) { cfilter = cf.dataset.cf; return draw(); }
       const cp = e.target.closest('[data-complete]');
       if (cp) return completeModal(cp.dataset.complete, draw);
+      // Open a complaint: the View button, or anywhere on the row except its link
+      const co = e.target.closest('[data-copen]');
+      if (co && !e.target.closest('a')) return complaintModal(co.dataset.copen, draw);
+    });
+    v.addEventListener('keydown', (e) => {
+      const row = e.target.closest && e.target.closest('.c-row');
+      if (row && e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); complaintModal(row.dataset.copen, draw); }
     });
     v.addEventListener('input', (e) => { if (e.target.id === 'oq') { oq = e.target.value.trim(); $('#o-list').innerHTML = outletsList(); } });
   }

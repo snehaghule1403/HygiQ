@@ -51,6 +51,9 @@
 .step-dot .ic { width: 16px; height: 16px; }
 @media (max-width: 600px) { .steps { grid-template-columns: 1fr; } }
 
+.c-row { cursor: pointer; border-radius: 10px; padding-left: 8px; padding-right: 8px; }
+.c-row:hover, .c-row:focus-visible { background: var(--surface-2); }
+
 /* ---------- voice ---------- */
 .search-row { display: flex; gap: 10px; align-items: center; }
 .search-row .search { flex: 1; }
